@@ -1,0 +1,12 @@
+export const queryKeys = {
+  overview: (businessId: number) => ["overview", businessId] as const,
+  business: (businessId: number) => ["business", businessId] as const,
+  chats: (businessId: number, filters: Record<string, string | undefined>) =>
+    ["chats", businessId, filters] as const,
+  thread: (businessId: number, phone: string | null) =>
+    ["thread", businessId, phone] as const,
+  products: (businessId: number, search: string) =>
+    ["products", businessId, search] as const,
+  syncStatus: (businessId: number) => ["sync-status", businessId] as const,
+  integrations: (businessId: number) => ["integrations", businessId] as const,
+};
