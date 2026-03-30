@@ -32,16 +32,28 @@ export function IntegrationsPanel({ businessId }: { businessId: number }) {
   const [testOpen, setTestOpen] = useState(false);
   const [testPrompt, setTestPrompt] = useState("Est-ce que vous livrez a Fes ?");
   const [testResponse, setTestResponse] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
 
   const integrationsQuery = useQuery({
     queryKey: queryKeys.integrations(businessId),
     queryFn: () => api.getIntegrations(businessId),
   });
 
+  const businessQuery = useQuery({
+    queryKey: queryKeys.business(businessId),
+    queryFn: () => api.getBusiness(businessId),
+  });
+
   const whatsappMutation = useMutation({
-    mutationFn: (status: "connected" | "disconnected") => api.setWhatsAppConnection(businessId, status),
+    mutationFn: (status: "connected" | "disconnected") =>
+      api.setWhatsAppConnection(businessId, status, {
+        phoneNumber: phoneNumber.trim() || integrationsQuery.data?.whatsapp.phone_number,
+        businessName:
+          businessQuery.data?.name || integrationsQuery.data?.whatsapp.business_name,
+      }),
     onSuccess: (data) => {
       queryClient.setQueryData(queryKeys.integrations(businessId), data);
+      setPhoneNumber(data.whatsapp.phone_number);
       queryClient.invalidateQueries({ queryKey: queryKeys.overview(businessId) });
       toast.success(
         data.whatsapp.status === "connected"
@@ -79,6 +91,7 @@ export function IntegrationsPanel({ businessId }: { businessId: number }) {
   if (!integrationsQuery.data) return null;
 
   const { checklist, whatsapp, platforms, coming_soon } = integrationsQuery.data;
+  const resolvedPhoneNumber = phoneNumber || whatsapp.phone_number;
 
   return (
     <div className="space-y-8">
@@ -133,7 +146,7 @@ export function IntegrationsPanel({ businessId }: { businessId: number }) {
               ) : (
                 <Button
                   onClick={() => whatsappMutation.mutate("connected")}
-                  disabled={whatsappMutation.isPending}
+                  disabled={whatsappMutation.isPending || !resolvedPhoneNumber.trim()}
                 >
                   {whatsappMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Cable className="h-4 w-4" />}
                   Connecter avec Meta
@@ -159,10 +172,14 @@ export function IntegrationsPanel({ businessId }: { businessId: number }) {
             </div>
           ) : (
             <div className="rounded-2xl border border-border/70 bg-background/70 p-5">
-              <div className="space-y-3">
+                <div className="space-y-3">
                 <div className="font-medium">Etapes de connexion</div>
                 <div className="text-sm text-muted-foreground">1. Entrez votre numero WhatsApp Business</div>
-                <Input defaultValue={whatsapp.phone_number} />
+                <Input
+                  value={resolvedPhoneNumber}
+                  onChange={(event) => setPhoneNumber(event.target.value)}
+                  placeholder="+212600000000"
+                />
                 <div className="text-sm text-muted-foreground">2. Connectez-vous via votre compte Meta Business</div>
                 <div className="text-sm text-muted-foreground">3. Testez la connexion une fois activee</div>
               </div>

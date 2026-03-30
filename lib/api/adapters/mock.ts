@@ -257,11 +257,17 @@ export class MockDashboardApi implements DashboardApi {
     return buildIntegrationsData(readDemoState());
   }
 
-  async setWhatsAppConnection(businessId: number, status: "connected" | "disconnected") {
+  async setWhatsAppConnection(
+    businessId: number,
+    status: "connected" | "disconnected",
+    options?: { phoneNumber?: string; businessName?: string },
+  ) {
     await delay(260);
     const state = readDemoState();
     state.whatsapp.status = status;
     state.whatsapp.health = status === "connected" ? "healthy" : "attention";
+    if (options?.phoneNumber) state.whatsapp.phone_number = options.phoneNumber;
+    if (options?.businessName) state.whatsapp.business_name = options.businessName;
     writeDemoState(state);
     return buildIntegrationsData(state);
   }

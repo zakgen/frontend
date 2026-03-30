@@ -43,6 +43,7 @@ export interface DashboardApi {
   setWhatsAppConnection(
     businessId: number,
     status: "connected" | "disconnected",
+    options?: { phoneNumber?: string; businessName?: string },
   ): Promise<IntegrationsData>;
   runCommerceSync(
     businessId: number,
