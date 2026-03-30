@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import {
+  CircleUserRound,
   Bot,
   BriefcaseBusiness,
   Cable,
@@ -14,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { ThemeToggle } from "@/components/dashboard/theme-toggle";
+import { SignOutButton } from "@/components/auth/sign-out-button";
 import { Badge } from "@/components/ui/badge";
 import { getDashboardApi } from "@/lib/api";
 import { queryKeys } from "@/lib/api/query-keys";
@@ -32,8 +34,9 @@ const navItems = [
 ];
 
 export function DashboardShell({
+  userEmail,
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+}: Readonly<{ userEmail: string | null; children: React.ReactNode }>) {
   const pathname = usePathname();
   const businessQuery = useQuery({
     queryKey: queryKeys.business(businessId),
@@ -117,12 +120,31 @@ export function DashboardShell({
               })}
             </nav>
 
-            <div className="mt-auto flex items-center justify-between rounded-3xl border border-border/60 bg-background/80 p-4">
-              <div>
-                <div className="text-sm font-medium">Apparence</div>
-                <div className="text-xs text-muted-foreground">Mode clair prioritaire</div>
+            <div className="mt-auto space-y-4">
+              <div className="rounded-3xl border border-border/60 bg-background/80 p-4">
+                <div className="flex items-start gap-3">
+                  <div className="rounded-2xl bg-primary/10 p-2 text-primary">
+                    <CircleUserRound className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-medium">Session active</div>
+                    <div className="truncate text-xs text-muted-foreground">
+                      {userEmail ?? "Utilisateur connecte"}
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <SignOutButton />
+                </div>
               </div>
-              <ThemeToggle />
+
+              <div className="flex items-center justify-between rounded-3xl border border-border/60 bg-background/80 p-4">
+                <div>
+                  <div className="text-sm font-medium">Apparence</div>
+                  <div className="text-xs text-muted-foreground">Mode clair prioritaire</div>
+                </div>
+                <ThemeToggle />
+              </div>
             </div>
           </div>
         </aside>

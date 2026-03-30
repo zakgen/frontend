@@ -5,6 +5,7 @@ Frontend V0 demo pour ZakBot, l'assistant WhatsApp de vente pour boutiques e-com
 ## Ce qui est implemente
 
 - Interface App Router Next.js 15
+- Authentification Supabase pour proteger le dashboard
 - UI French-first, light-mode-first
 - Tableau de bord
 - Conversations type inbox
@@ -29,6 +30,7 @@ Frontend V0 demo pour ZakBot, l'assistant WhatsApp de vente pour boutiques e-com
 Cette phase est volontairement **UI-first**.
 
 - Les ecrans tournent sur des donnees mock/demo
+- L'acces au dashboard est prive via Supabase Auth
 - L'architecture d'adaptation API reste en place pour brancher le backend plus tard
 - Aucune dependance backend n'est requise pour la demo UX
 
@@ -47,13 +49,23 @@ Ouvrez ensuite [http://localhost:3000/dashboard](http://localhost:3000/dashboard
 Copiez `.env.example` vers `.env.local` :
 
 ```bash
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
 NEXT_PUBLIC_DEMO_BUSINESS_ID=1
 ```
 
 Note:
+- `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_ANON_KEY` sont requis pour la connexion
 - `NEXT_PUBLIC_API_BASE_URL` est documentee pour la phase d'integration backend
 - la V0 actuelle utilise le mock adapter comme source principale
+
+## Authentification
+
+- routes publiques: `/login`, `/signup`, `/forgot-password`, `/reset-password`
+- routes privees: `/dashboard/*`
+- la protection est assuree par Supabase SSR via `middleware.ts` et une verification serveur dans `app/dashboard/layout.tsx`
+- la page `/auth/callback` finalise les liens de confirmation email et de reinitialisation
 
 ## Structure
 
