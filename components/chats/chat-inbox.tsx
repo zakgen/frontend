@@ -1,19 +1,22 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Search, UserRound } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Loader2, Search, SendHorizonal, UserRound } from "lucide-react";
 
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { ErrorState } from "@/components/dashboard/error-state";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "@/components/ui/sonner";
+import { Textarea } from "@/components/ui/textarea";
 import { getDashboardApi } from "@/lib/api";
 import { queryKeys } from "@/lib/api/query-keys";
 import { getDateGroupLabel, getIntentMeta, formatDateTime, formatRelativeTime, maskPhoneNumber } from "@/lib/utils";
@@ -36,6 +39,8 @@ export function ChatInbox({ businessId }: { businessId: number }) {
   const [direction, setDirection] = useState("all");
   const [needsHumanOnly, setNeedsHumanOnly] = useState(false);
   const [selectedPhone, setSelectedPhone] = useState<string | null>(null);
+  const [draftReply, setDraftReply] = useState("");
+  const queryClient = useQueryClient();
 
   const chatsQuery = useQuery({
     queryKey: queryKeys.chats(businessId, {
@@ -75,6 +80,41 @@ export function ChatInbox({ businessId }: { businessId: number }) {
     queryFn: () => api.getChatThread(businessId, selectedPhone as string),
     enabled: Boolean(selectedPhone),
   });
+
+  const replyMutation = useMutation({
+    mutationFn: async () => {
+      const text = draftReply.trim();
+      if (!selectedPhone) {
+        throw new Error("Aucune conversation selectionnee.");
+      }
+      if (!text) {
+        throw new Error("Le message ne peut pas etre vide.");
+      }
+      return api.sendChatReply(businessId, selectedPhone, { text });
+    },
+    onSuccess: async () => {
+      setDraftReply("");
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["chats", businessId] }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.thread(businessId, selectedPhone),
+        }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.overview(businessId) }),
+      ]);
+      toast.success("Message envoye sur WhatsApp.");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Impossible d'envoyer le message.");
+    },
+  });
+
+  function handleSendReply() {
+    if (!draftReply.trim()) {
+      toast.error("Ecrivez une reponse avant l'envoi.");
+      return;
+    }
+    replyMutation.mutate();
+  }
 
   if (chatsQuery.isError) {
     return (
@@ -252,7 +292,7 @@ export function ChatInbox({ businessId }: { businessId: number }) {
                         </div>
                       </div>
                     </div>
-                    <ScrollArea className="h-[660px]">
+                    <ScrollArea className="h-[520px] xl:h-[560px]">
                       <div className="space-y-4 p-6">
                         {threadQuery.data.messages.some((message) => message.needs_human) ? (
                           <div className="rounded-2xl border border-amber-500/20 bg-amber-500/8 p-4 text-sm text-amber-700">
@@ -303,6 +343,47 @@ export function ChatInbox({ businessId }: { businessId: number }) {
                         })}
                       </div>
                     </ScrollArea>
+                    <div className="border-t border-border/70 bg-background/90 p-4">
+                      <div className="space-y-3 rounded-3xl border border-border/70 bg-card/70 p-4 shadow-sm">
+                        <Textarea
+                          value={draftReply}
+                          onChange={(event) => setDraftReply(event.target.value)}
+                          placeholder="Ecrivez une reponse WhatsApp claire et concise..."
+                          className="min-h-[120px] resize-none border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
+                          maxLength={1600}
+                          disabled={replyMutation.isPending}
+                          onKeyDown={(event) => {
+                            if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+                              event.preventDefault();
+                              handleSendReply();
+                            }
+                          }}
+                        />
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="text-xs text-muted-foreground">
+                            {draftReply.trim().length}/1600
+                            <span className="ml-2">Cmd/Ctrl + Enter pour envoyer</span>
+                          </div>
+                          <Button
+                            type="button"
+                            onClick={handleSendReply}
+                            disabled={replyMutation.isPending || !draftReply.trim()}
+                          >
+                            {replyMutation.isPending ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Envoi...
+                              </>
+                            ) : (
+                              <>
+                                <SendHorizonal className="mr-2 h-4 w-4" />
+                                Envoyer
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )
               ) : (

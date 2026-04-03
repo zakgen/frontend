@@ -10,8 +10,10 @@ import {
 import type {
   BulkProductInput,
   BusinessProfile,
+  ChatReplyInput,
   ChatFilters,
   CommercePlatformId,
+  ConversationMessage,
   Product,
   ProductInput,
   ProductVariant,
@@ -137,6 +139,28 @@ export class MockDashboardApi implements DashboardApi {
   async getChatThread(businessId: number, phone: string) {
     await delay();
     return getConversationThread(readDemoState().messages, phone);
+  }
+
+  async sendChatReply(
+    businessId: number,
+    phone: string,
+    input: ChatReplyInput,
+  ): Promise<ConversationMessage> {
+    await delay(260);
+    const state = readDemoState();
+    const message: ConversationMessage = {
+      id: `msg-${Math.random().toString(36).slice(2, 10)}`,
+      phone,
+      text: input.text,
+      direction: "outbound",
+      timestamp: new Date().toISOString(),
+      intent: input.intent ?? null,
+      needs_human: input.needs_human ?? false,
+    };
+    state.messages.push(message);
+    state.whatsapp.last_activity_at = message.timestamp;
+    writeDemoState(state);
+    return message;
   }
 
   async getProducts(businessId: number, search = "", category = "all") {

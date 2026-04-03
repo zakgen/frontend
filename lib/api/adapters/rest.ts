@@ -2,8 +2,10 @@ import type { DashboardApi } from "@/lib/api/dashboard-api";
 import type {
   BulkProductInput,
   BusinessProfile,
+  ChatReplyInput,
   ChatFilters,
   CommercePlatformId,
+  ConversationMessage,
   IntegrationsData,
   OverviewData,
   Product,
@@ -107,6 +109,24 @@ export class RestDashboardApi implements DashboardApi {
     phone: string,
   ): Promise<import("@/lib/types").ConversationThread> {
     return request(`/business/${businessId}/chats/${encodeURIComponent(phone)}`);
+  }
+
+  async sendChatReply(
+    businessId: number,
+    phone: string,
+    input: ChatReplyInput,
+  ): Promise<ConversationMessage> {
+    return request<ConversationMessage>(
+      `/business/${businessId}/chats/${encodeURIComponent(phone)}/reply`,
+      {
+        method: "POST",
+        body: {
+          text: input.text,
+          intent: input.intent ?? undefined,
+          needs_human: input.needs_human ?? undefined,
+        },
+      },
+    );
   }
 
   async getProducts(

@@ -1,6 +1,7 @@
 import type {
   BusinessProfile,
   BulkProductInput,
+  ChatReplyInput,
   ChatFilters,
   ConversationSummary,
   ConversationThread,
@@ -25,6 +26,11 @@ export interface DashboardApi {
     filters?: ChatFilters,
   ): Promise<ConversationSummary[]>;
   getChatThread(businessId: number, phone: string): Promise<ConversationThread>;
+  sendChatReply(
+    businessId: number,
+    phone: string,
+    input: ChatReplyInput,
+  ): Promise<import("@/lib/types").ConversationMessage>;
   getProducts(
     businessId: number,
     search?: string,

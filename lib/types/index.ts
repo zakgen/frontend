@@ -117,6 +117,12 @@ export type ChatFilters = {
   needs_human?: boolean;
 };
 
+export type ChatReplyInput = {
+  text: string;
+  intent?: ConversationIntent | null;
+  needs_human?: boolean | null;
+};
+
 export type OverviewStats = {
   total_conversations: number;
   messages_handled: number;
