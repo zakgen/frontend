@@ -7,9 +7,12 @@ import type {
   CommercePlatformId,
   ConversationMessage,
   IntegrationsData,
+  OrderConfirmationActionInput,
   OrderConfirmationIngestResponse,
   OrderConfirmationRequest,
   OrderConfirmationSessionDetail,
+  OrderConfirmationSessionListResponse,
+  OrderConfirmationSessionStatus,
   OverviewData,
   Product,
   ProductInput,
@@ -287,6 +290,37 @@ export class RestDashboardApi implements DashboardApi {
   ): Promise<OrderConfirmationSessionDetail> {
     return request<OrderConfirmationSessionDetail>(
       `/business/${businessId}/order-confirmations/sessions/${encodeURIComponent(sessionId)}`,
+    );
+  }
+
+  async listOrderConfirmationSessions(
+    businessId: number,
+    status?: OrderConfirmationSessionStatus | "all",
+  ): Promise<OrderConfirmationSessionListResponse> {
+    return request<OrderConfirmationSessionListResponse>(
+      `/business/${businessId}/order-confirmations/sessions`,
+      {
+        query: {
+          status: status && status !== "all" ? status : undefined,
+        },
+      },
+    );
+  }
+
+  async applyOrderConfirmationAction(
+    businessId: number,
+    sessionId: string,
+    input: OrderConfirmationActionInput,
+  ): Promise<OrderConfirmationSessionDetail> {
+    return request<OrderConfirmationSessionDetail>(
+      `/business/${businessId}/order-confirmations/sessions/${encodeURIComponent(sessionId)}/actions`,
+      {
+        method: "POST",
+        body: {
+          action: input.action,
+          note: input.note ?? undefined,
+        },
+      },
     );
   }
 }

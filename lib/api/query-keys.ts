@@ -9,4 +9,10 @@ export const queryKeys = {
     ["products", businessId, search] as const,
   syncStatus: (businessId: number) => ["sync-status", businessId] as const,
   integrations: (businessId: number) => ["integrations", businessId] as const,
+  orderConfirmations: (
+    businessId: number,
+    status: string,
+  ) => ["order-confirmations", businessId, status] as const,
+  orderConfirmationSession: (businessId: number, sessionId: string | null) =>
+    ["order-confirmation-session", businessId, sessionId] as const,
 };

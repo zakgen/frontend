@@ -15,8 +15,11 @@ import type {
   CommercePlatformId,
   ConversationMessage,
   OrderConfirmationIngestResponse,
+  OrderConfirmationActionInput,
   OrderConfirmationRequest,
   OrderConfirmationSessionDetail,
+  OrderConfirmationSessionListResponse,
+  OrderConfirmationSessionStatus,
   Product,
   ProductInput,
   ProductVariant,
@@ -337,6 +340,25 @@ export class MockDashboardApi implements DashboardApi {
   ): Promise<OrderConfirmationSessionDetail> {
     throw new Error(
       "Le test de confirmation de commande necessite un backend reel. Configurez NEXT_PUBLIC_API_BASE_URL.",
+    );
+  }
+
+  async listOrderConfirmationSessions(
+    businessId: number,
+    status?: OrderConfirmationSessionStatus | "all",
+  ): Promise<OrderConfirmationSessionListResponse> {
+    throw new Error(
+      "La vue Order Confirmations necessite un backend reel. Configurez NEXT_PUBLIC_API_BASE_URL.",
+    );
+  }
+
+  async applyOrderConfirmationAction(
+    businessId: number,
+    sessionId: string,
+    input: OrderConfirmationActionInput,
+  ): Promise<OrderConfirmationSessionDetail> {
+    throw new Error(
+      "La gestion des sessions de confirmation necessite un backend reel. Configurez NEXT_PUBLIC_API_BASE_URL.",
     );
   }
 }

@@ -6,9 +6,12 @@ import type {
   ConversationSummary,
   ConversationThread,
   IntegrationsData,
+  OrderConfirmationActionInput,
   OrderConfirmationIngestResponse,
   OrderConfirmationRequest,
   OrderConfirmationSessionDetail,
+  OrderConfirmationSessionListResponse,
+  OrderConfirmationSessionStatus,
   OverviewData,
   Product,
   ProductInput,
@@ -69,5 +72,14 @@ export interface DashboardApi {
   getOrderConfirmationSession(
     businessId: number,
     sessionId: string,
+  ): Promise<OrderConfirmationSessionDetail>;
+  listOrderConfirmationSessions(
+    businessId: number,
+    status?: OrderConfirmationSessionStatus | "all",
+  ): Promise<OrderConfirmationSessionListResponse>;
+  applyOrderConfirmationAction(
+    businessId: number,
+    sessionId: string,
+    input: OrderConfirmationActionInput,
   ): Promise<OrderConfirmationSessionDetail>;
 }

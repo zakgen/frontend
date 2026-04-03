@@ -18,6 +18,21 @@ export type IntegrationConnectionState = "connected" | "disconnected";
 export type IntegrationHealth = "healthy" | "attention";
 export type CommercePlatformId = "youcan" | "shopify" | "woocommerce" | "zid";
 export type PreferredLanguage = "english" | "french" | "darija";
+export type OrderConfirmationSessionStatus =
+  | "pending_send"
+  | "awaiting_customer"
+  | "confirmed"
+  | "declined"
+  | "edit_requested"
+  | "human_requested"
+  | "expired";
+export type OrderConfirmationAction =
+  | "confirm"
+  | "decline"
+  | "request_edit"
+  | "request_human"
+  | "reopen"
+  | "resend";
 
 export type FAQItem = {
   id: string;
@@ -273,14 +288,7 @@ export type OrderConfirmationSessionSummary = {
   phone: string;
   customer_name?: string | null;
   preferred_language?: string | null;
-  status:
-    | "pending_send"
-    | "awaiting_customer"
-    | "confirmed"
-    | "declined"
-    | "edit_requested"
-    | "human_requested"
-    | "expired";
+  status: OrderConfirmationSessionStatus;
   needs_human: boolean;
   last_detected_intent?: string | null;
   started_at?: string | null;
@@ -300,4 +308,14 @@ export type OrderConfirmationIngestResponse = {
   order: OrderRecord;
   session: OrderConfirmationSessionDetail;
   confirmation_message_sent: boolean;
+};
+
+export type OrderConfirmationSessionListResponse = {
+  sessions: OrderConfirmationSessionSummary[];
+  total: number;
+};
+
+export type OrderConfirmationActionInput = {
+  action: OrderConfirmationAction;
+  note?: string | null;
 };
