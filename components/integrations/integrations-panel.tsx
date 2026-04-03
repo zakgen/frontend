@@ -8,12 +8,14 @@ import {
   Loader2,
   Lock,
   MessageCircleMore,
+  PackageCheck,
   Send,
   Smartphone,
   Sparkles,
 } from "lucide-react";
 
 import { ErrorState } from "@/components/dashboard/error-state";
+import { OrderConfirmationTestDialog } from "@/components/integrations/order-confirmation-test-dialog";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { SetupChecklistBanner } from "@/components/dashboard/setup-checklist-banner";
 import { Badge } from "@/components/ui/badge";
@@ -37,17 +39,13 @@ const api = getDashboardApi();
 
 export function IntegrationsPanel({ businessId }: { businessId: number }) {
   const [testOpen, setTestOpen] = useState(false);
+  const [orderTestOpen, setOrderTestOpen] = useState(false);
   const [testPrompt, setTestPrompt] = useState("Est-ce que vous livrez a Fes ?");
   const [testResponse, setTestResponse] = useState("");
 
   const integrationsQuery = useQuery({
     queryKey: queryKeys.integrations(businessId),
     queryFn: () => api.getIntegrations(businessId),
-  });
-
-  const businessQuery = useQuery({
-    queryKey: queryKeys.business(businessId),
-    queryFn: () => api.getBusiness(businessId),
   });
 
   const testMutation = useMutation({
@@ -70,6 +68,14 @@ export function IntegrationsPanel({ businessId }: { businessId: number }) {
   if (!integrationsQuery.data) return null;
 
   const { checklist, whatsapp, platforms, coming_soon } = integrationsQuery.data;
+  const hasLiveBackend = Boolean(process.env.NEXT_PUBLIC_API_BASE_URL?.trim());
+  const orderTestDisabledReason = !businessId
+    ? "Un business doit etre selectionne avant de lancer un test."
+    : !whatsapp || whatsapp.status !== "connected"
+      ? "WhatsApp must be connected before sending a test order confirmation."
+      : !hasLiveBackend
+        ? "Ce test necessite un backend reel. Configurez NEXT_PUBLIC_API_BASE_URL."
+        : null;
 
   return (
     <div className="space-y-8">
@@ -102,6 +108,13 @@ export function IntegrationsPanel({ businessId }: { businessId: number }) {
               </div>
             </div>
             <div className="flex flex-wrap gap-3">
+              <Button
+                onClick={() => setOrderTestOpen(true)}
+                disabled={Boolean(orderTestDisabledReason)}
+              >
+                <PackageCheck className="h-4 w-4" />
+                Send Test Order Confirmation
+              </Button>
               <Button variant="outline" onClick={() => setTestOpen(true)}>
                 <MessageCircleMore className="h-4 w-4" />
                 Tester une reponse
@@ -185,6 +198,12 @@ export function IntegrationsPanel({ businessId }: { businessId: number }) {
             personnalises seront disponibles, cette page gardera exactement les deux choix de
             routage deja affiches ici.
           </div>
+
+          {orderTestDisabledReason ? (
+            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/8 p-4 text-sm text-amber-700">
+              {orderTestDisabledReason}
+            </div>
+          ) : null}
         </CardContent>
       </Card>
 
@@ -267,6 +286,14 @@ export function IntegrationsPanel({ businessId }: { businessId: number }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <OrderConfirmationTestDialog
+        businessId={businessId}
+        open={orderTestOpen}
+        onOpenChange={setOrderTestOpen}
+        whatsappConnected={whatsapp.status === "connected"}
+        disabledReason={orderTestDisabledReason}
+      />
     </div>
   );
 }

@@ -7,6 +7,9 @@ import type {
   CommercePlatformId,
   ConversationMessage,
   IntegrationsData,
+  OrderConfirmationIngestResponse,
+  OrderConfirmationRequest,
+  OrderConfirmationSessionDetail,
   OverviewData,
   Product,
   ProductInput,
@@ -263,5 +266,27 @@ export class RestDashboardApi implements DashboardApi {
       },
     );
     return response.message;
+  }
+
+  async createOrderConfirmation(
+    businessId: number,
+    input: OrderConfirmationRequest,
+  ): Promise<OrderConfirmationIngestResponse> {
+    return request<OrderConfirmationIngestResponse>(
+      `/business/${businessId}/order-confirmations/orders`,
+      {
+        method: "POST",
+        body: input,
+      },
+    );
+  }
+
+  async getOrderConfirmationSession(
+    businessId: number,
+    sessionId: string,
+  ): Promise<OrderConfirmationSessionDetail> {
+    return request<OrderConfirmationSessionDetail>(
+      `/business/${businessId}/order-confirmations/sessions/${encodeURIComponent(sessionId)}`,
+    );
   }
 }

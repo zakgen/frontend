@@ -135,3 +135,20 @@ export function slugify(value: string) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
+
+export function getSafeWhatsAppReadinessMessage(message: string) {
+  const normalized = message.toLowerCase();
+
+  if (
+    normalized.includes("twilio") ||
+    normalized.includes("whatsapp") ||
+    normalized.includes("messaging provider") ||
+    normalized.includes("from phone number") ||
+    normalized.includes("sandbox") ||
+    normalized.includes("channel")
+  ) {
+    return "Le backend a cree la demande, mais l'envoi WhatsApp n'est pas pret cote fournisseur. Verifiez la configuration Twilio/WhatsApp puis reessayez.";
+  }
+
+  return message;
+}

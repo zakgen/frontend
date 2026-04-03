@@ -6,6 +6,9 @@ import type {
   ConversationSummary,
   ConversationThread,
   IntegrationsData,
+  OrderConfirmationIngestResponse,
+  OrderConfirmationRequest,
+  OrderConfirmationSessionDetail,
   OverviewData,
   Product,
   ProductInput,
@@ -59,4 +62,12 @@ export interface DashboardApi {
     businessId: number,
     prompt: string,
   ): Promise<string>;
+  createOrderConfirmation(
+    businessId: number,
+    input: OrderConfirmationRequest,
+  ): Promise<OrderConfirmationIngestResponse>;
+  getOrderConfirmationSession(
+    businessId: number,
+    sessionId: string,
+  ): Promise<OrderConfirmationSessionDetail>;
 }

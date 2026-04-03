@@ -14,6 +14,9 @@ import type {
   ChatFilters,
   CommercePlatformId,
   ConversationMessage,
+  OrderConfirmationIngestResponse,
+  OrderConfirmationRequest,
+  OrderConfirmationSessionDetail,
   Product,
   ProductInput,
   ProductVariant,
@@ -317,5 +320,23 @@ export class MockDashboardApi implements DashboardApi {
   async sendWhatsAppTestMessage(businessId: number, prompt: string) {
     await delay(380);
     return `Exemple de reponse ZakBot : Bonjour, oui nous livrons a Fes et le paiement a la livraison est disponible. Souhaitez-vous confirmer votre ville et le produit qui vous interesse ?`;
+  }
+
+  async createOrderConfirmation(
+    businessId: number,
+    input: OrderConfirmationRequest,
+  ): Promise<OrderConfirmationIngestResponse> {
+    throw new Error(
+      "Le test de confirmation de commande necessite un backend reel. Configurez NEXT_PUBLIC_API_BASE_URL.",
+    );
+  }
+
+  async getOrderConfirmationSession(
+    businessId: number,
+    sessionId: string,
+  ): Promise<OrderConfirmationSessionDetail> {
+    throw new Error(
+      "Le test de confirmation de commande necessite un backend reel. Configurez NEXT_PUBLIC_API_BASE_URL.",
+    );
   }
 }

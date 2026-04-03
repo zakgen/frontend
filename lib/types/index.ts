@@ -17,6 +17,7 @@ export type PaymentMethod =
 export type IntegrationConnectionState = "connected" | "disconnected";
 export type IntegrationHealth = "healthy" | "attention";
 export type CommercePlatformId = "youcan" | "shopify" | "woocommerce" | "zid";
+export type PreferredLanguage = "english" | "french" | "darija";
 
 export type FAQItem = {
   id: string;
@@ -207,4 +208,96 @@ export type ProductListResult = {
   products: Product[];
   total: number;
   categories: string[];
+};
+
+export type StoreOrderItemInput = {
+  product_name: string;
+  quantity: number;
+  variant?: string | null;
+  unit_price?: number | null;
+  sku?: string | null;
+};
+
+export type OrderConfirmationRequest = {
+  source_store: "generic" | "shopify" | "woocommerce" | "youcan" | "zid";
+  external_order_id: string;
+  customer_name?: string | null;
+  customer_phone: string;
+  preferred_language?: PreferredLanguage | null;
+  total_amount: number;
+  currency: string;
+  payment_method?: string | null;
+  delivery_city?: string | null;
+  delivery_address?: string | null;
+  order_notes?: string | null;
+  items: StoreOrderItemInput[];
+  metadata?: Record<string, unknown>;
+  raw_payload?: Record<string, unknown>;
+  send_confirmation?: boolean;
+};
+
+export type OrderRecord = {
+  id: string;
+  business_id: number;
+  source_store: "generic" | "shopify" | "woocommerce" | "youcan" | "zid" | string;
+  external_order_id: string;
+  customer_name?: string | null;
+  customer_phone: string;
+  preferred_language?: string | null;
+  total_amount: number;
+  currency: string;
+  payment_method?: string | null;
+  delivery_city?: string | null;
+  delivery_address?: string | null;
+  order_notes?: string | null;
+  status: string;
+  confirmation_status: string;
+  items: StoreOrderItemInput[];
+  metadata: Record<string, unknown>;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
+
+export type OrderConfirmationEvent = {
+  id: string;
+  session_id: string;
+  event_type: string;
+  payload: Record<string, unknown>;
+  created_at?: string | null;
+};
+
+export type OrderConfirmationSessionSummary = {
+  id: string;
+  order_id: string;
+  business_id: number;
+  phone: string;
+  customer_name?: string | null;
+  preferred_language?: string | null;
+  status:
+    | "pending_send"
+    | "awaiting_customer"
+    | "confirmed"
+    | "declined"
+    | "edit_requested"
+    | "human_requested"
+    | "expired";
+  needs_human: boolean;
+  last_detected_intent?: string | null;
+  started_at?: string | null;
+  last_customer_message_at?: string | null;
+  confirmed_at?: string | null;
+  declined_at?: string | null;
+  updated_at?: string | null;
+};
+
+export type OrderConfirmationSessionDetail = OrderConfirmationSessionSummary & {
+  structured_snapshot: Record<string, unknown>;
+  order: OrderRecord;
+  events: OrderConfirmationEvent[];
+};
+
+export type OrderConfirmationIngestResponse = {
+  order: OrderRecord;
+  session: OrderConfirmationSessionDetail;
+  confirmation_message_sent: boolean;
 };
