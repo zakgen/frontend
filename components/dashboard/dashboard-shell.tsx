@@ -53,10 +53,10 @@ export function DashboardShell({
 
   return (
     <div className="min-h-screen">
-      <div className="mx-auto grid min-h-screen max-w-[1440px] grid-cols-1 gap-6 p-4 lg:grid-cols-[240px_minmax(0,1fr)] lg:p-6">
-        <aside className="relative overflow-hidden rounded-[28px] border border-border/70 bg-card/90 p-5 shadow-soft backdrop-blur-sm">
+      <div className="mx-auto grid min-h-screen max-w-[1440px] grid-cols-1 gap-6 p-4 lg:grid-cols-[240px_minmax(0,1fr)] lg:items-start lg:p-6">
+        <aside className="relative overflow-hidden rounded-[28px] border border-border/70 bg-card/90 p-5 shadow-soft backdrop-blur-sm lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)]">
           <div className="absolute inset-0 surface-grid opacity-30" />
-          <div className="relative flex h-full flex-col">
+          <div className="relative flex h-full flex-col lg:max-h-[calc(100vh-5.5rem)] lg:overflow-y-auto lg:pr-1">
             <div className="mb-8 flex items-center gap-3">
               <div className="rounded-2xl bg-primary p-3 text-primary-foreground">
                 <Bot className="h-5 w-5" />

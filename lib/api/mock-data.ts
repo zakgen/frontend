@@ -216,9 +216,9 @@ export const mockSyncStatus: SyncStatus = {
 
 export const mockWhatsAppIntegration: WhatsAppIntegration = {
   phone_number: "+212 6 61 23 48 90",
-  business_name: "Boutique Al Warda",
-  status: "disconnected",
-  health: "attention",
+  business_name: "ZakBot App",
+  status: "connected",
+  health: "healthy",
   received_messages_last_30_days: 1204,
   last_activity_at: new Date(now.getTime() - 1000 * 60 * 4).toISOString(),
 };
@@ -228,9 +228,9 @@ export const mockPlatforms: CommerceIntegration[] = [
     id: "youcan",
     name: "YouCan",
     description: "Synchronisez vos produits automatiquement depuis votre boutique YouCan.",
-    status: "connected",
-    imported_products: 124,
-    last_sync_at: new Date(now.getTime() - 1000 * 60 * 120).toISOString(),
+    status: "disconnected",
+    imported_products: 0,
+    last_sync_at: null,
   },
   {
     id: "shopify",
