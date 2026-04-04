@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Search, SendHorizonal, UserRound } from "lucide-react";
 
@@ -40,6 +40,7 @@ export function ChatInbox({ businessId }: { businessId: number }) {
   const [needsHumanOnly, setNeedsHumanOnly] = useState(false);
   const [selectedPhone, setSelectedPhone] = useState<string | null>(null);
   const [draftReply, setDraftReply] = useState("");
+  const threadEndRef = useRef<HTMLDivElement | null>(null);
   const queryClient = useQueryClient();
 
   const chatsQuery = useQuery({
@@ -80,6 +81,16 @@ export function ChatInbox({ businessId }: { businessId: number }) {
     queryFn: () => api.getChatThread(businessId, selectedPhone as string),
     enabled: Boolean(selectedPhone),
   });
+
+  useEffect(() => {
+    if (!threadQuery.data?.messages.length) return;
+
+    requestAnimationFrame(() => {
+      threadEndRef.current?.scrollIntoView({
+        block: "end",
+      });
+    });
+  }, [selectedPhone, threadQuery.data?.messages.length]);
 
   const replyMutation = useMutation({
     mutationFn: async () => {
@@ -129,7 +140,7 @@ export function ChatInbox({ businessId }: { businessId: number }) {
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="Conversations"
+        eyebrow="Chats"
         title="Passez en revue les echanges avec vos clientes"
         description="Consultez vos conversations comme une boite de reception, reperez l'intention principale et les cas qui demandent un relais humain."
       />
@@ -341,6 +352,7 @@ export function ChatInbox({ businessId }: { businessId: number }) {
                             </div>
                           );
                         })}
+                        <div ref={threadEndRef} />
                       </div>
                     </ScrollArea>
                     <div className="border-t border-border/70 bg-background/90 p-4">

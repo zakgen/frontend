@@ -27,7 +27,7 @@ const api = getDashboardApi();
 
 const navItems = [
   { href: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
-  { href: "/dashboard/chats", label: "Conversations", icon: MessageCircleMore },
+  { href: "/dashboard/chats", label: "Chats", icon: MessageCircleMore },
   { href: "/dashboard/order-confirmations", label: "Order Confirmations", icon: ClipboardCheck },
   { href: "/dashboard/products", label: "Produits", icon: Package2 },
   { href: "/dashboard/business", label: "Profil de la boutique", icon: BriefcaseBusiness },
