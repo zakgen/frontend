@@ -204,6 +204,10 @@ export type CommerceIntegration = {
   status: IntegrationConnectionState;
   imported_products: number;
   last_sync_at: string | null;
+  shop_domain?: string | null;
+  last_activity_at?: string | null;
+  last_sync_back_at?: string | null;
+  webhook_status?: string | null;
 };
 
 export type ComingSoonIntegration = {

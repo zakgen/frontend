@@ -287,6 +287,16 @@ export class MockDashboardApi implements DashboardApi {
     return buildIntegrationsData(readDemoState());
   }
 
+  getShopifyConnectUrl(
+    businessId: number,
+    shop: string,
+    returnTo: string,
+  ): string {
+    throw new Error(
+      "La connexion Shopify necessite un backend reel. Configurez NEXT_PUBLIC_API_BASE_URL.",
+    );
+  }
+
   async setWhatsAppConnection(
     businessId: number,
     status: "connected" | "disconnected",

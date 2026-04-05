@@ -226,6 +226,14 @@ export class RestDashboardApi implements DashboardApi {
     return request<IntegrationsData>(`/business/${businessId}/integrations`);
   }
 
+  getShopifyConnectUrl(businessId: number, shop: string, returnTo: string): string {
+    const params = new URLSearchParams({
+      shop,
+      return_to: returnTo,
+    });
+    return `${getBaseUrl()}/business/${businessId}/integrations/shopify/connect?${params.toString()}`;
+  }
+
   async setWhatsAppConnection(
     businessId: number,
     status: "connected" | "disconnected",

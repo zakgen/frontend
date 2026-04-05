@@ -4,7 +4,7 @@ import type { DashboardApi } from "@/lib/api/dashboard-api";
 
 let singleton: DashboardApi | null = null;
 
-export function getDashboardApi() {
+export function getDashboardApi(): DashboardApi {
   if (!singleton) {
     singleton = process.env.NEXT_PUBLIC_API_BASE_URL
       ? new RestDashboardApi()
