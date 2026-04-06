@@ -10,10 +10,13 @@ import {
 import type {
   BulkProductInput,
   BusinessProfile,
+  BusinessSummary,
   ChatReplyInput,
   ChatFilters,
   CommercePlatformId,
   ConversationMessage,
+  CreateBusinessInput,
+  MyBusinessesResponse,
   OrderConfirmationIngestResponse,
   OrderConfirmationActionInput,
   OrderConfirmationRequest,
@@ -83,7 +86,54 @@ function matchesChatFilters(
   return phoneMatch && intentMatch && directionMatch && humanMatch;
 }
 
+function toBusinessSummary(business: BusinessProfile): BusinessSummary {
+  return {
+    id: business.id,
+    name: business.name,
+    description: business.summary,
+    city: business.city,
+    shipping_policy: business.shipping_policy,
+    delivery_zones: business.delivery_zones,
+    payment_methods: business.payment_methods,
+    profile_metadata: {
+      niche: business.niche,
+      tone_of_voice: business.tone_of_voice,
+    },
+    updated_at: business.updated_at,
+  };
+}
+
 export class MockDashboardApi implements DashboardApi {
+  async getMyBusinesses(): Promise<MyBusinessesResponse> {
+    await delay();
+    const business = readDemoState().business;
+    return {
+      businesses: [toBusinessSummary(business)],
+      current_business_id: business.id,
+    };
+  }
+
+  async getMyBusiness(): Promise<BusinessSummary> {
+    await delay();
+    return toBusinessSummary(readDemoState().business);
+  }
+
+  async createMyBusiness(input: CreateBusinessInput): Promise<BusinessSummary> {
+    await delay();
+    const state = readDemoState();
+    state.business = {
+      ...state.business,
+      id: Date.now(),
+      name: input.name,
+      summary: input.description ?? "",
+      city: input.city ?? "",
+      shipping_policy: input.shipping_policy ?? "",
+      updated_at: new Date().toISOString(),
+    };
+    writeDemoState(state);
+    return toBusinessSummary(state.business);
+  }
+
   async getOverview(businessId: number) {
     await delay();
     const state = readDemoState();

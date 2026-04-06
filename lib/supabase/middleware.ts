@@ -54,7 +54,8 @@ function handleRouteAccess(
   user: { id: string } | null,
 ) {
   const path = request.nextUrl.pathname;
-  const isDashboardRoute = path.startsWith("/dashboard");
+  const isDashboardRoute =
+    path.startsWith("/dashboard") || path.startsWith("/b/") || path === "/businesses";
   const isAuthRedirectRoute = AUTH_REDIRECT_ROUTES.has(path);
 
   if (!user && isDashboardRoute) {
@@ -69,7 +70,7 @@ function handleRouteAccess(
 
   if (user && isAuthRedirectRoute) {
     const dashboardUrl = request.nextUrl.clone();
-    dashboardUrl.pathname = "/dashboard";
+    dashboardUrl.pathname = "/";
     dashboardUrl.search = "";
     return redirectWithCookies(dashboardUrl, response);
   }

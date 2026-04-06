@@ -2,11 +2,14 @@ import type { DashboardApi } from "@/lib/api/dashboard-api";
 import type {
   BulkProductInput,
   BusinessProfile,
+  BusinessSummary,
   ChatReplyInput,
   ChatFilters,
   CommercePlatformId,
   ConversationMessage,
+  CreateBusinessInput,
   IntegrationsData,
+  MyBusinessesResponse,
   OrderConfirmationActionInput,
   OrderConfirmationIngestResponse,
   OrderConfirmationRequest,
@@ -19,6 +22,7 @@ import type {
   ProductListResult,
   SyncStatus,
 } from "@/lib/types";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type RequestOptions = {
   method?: "GET" | "POST" | "PUT" | "DELETE";
@@ -45,14 +49,24 @@ function buildQuery(query?: RequestOptions["query"]) {
 }
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  const headers = await getAuthHeaders();
+
   const response = await fetch(`${getBaseUrl()}${path}${buildQuery(options.query)}`, {
     method: options.method ?? "GET",
-    headers: options.body ? { "Content-Type": "application/json" } : undefined,
+    headers: {
+      ...headers,
+      ...(options.body ? { "Content-Type": "application/json" } : {}),
+    },
     body: options.body ? JSON.stringify(options.body) : undefined,
     cache: "no-store",
   });
 
   if (!response.ok) {
+    if (response.status === 401 && typeof window !== "undefined") {
+      window.location.assign("/login?message=Votre session a expire. Reconnectez-vous.");
+      throw new Error("Authentification requise.");
+    }
+
     let message = `API request failed with status ${response.status}`;
     try {
       const payload = (await response.json()) as { detail?: string; errors?: Array<{ msg?: string }> };
@@ -70,6 +84,30 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   return (await response.json()) as T;
 }
 
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  if (typeof window === "undefined") {
+    return {};
+  }
+
+  try {
+    const supabase = createSupabaseBrowserClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user?.id) {
+      return {};
+    }
+
+    return {
+      "X-Auth-User-Id": user.id,
+      ...(user.email ? { "X-Auth-User-Email": user.email } : {}),
+    };
+  } catch {
+    return {};
+  }
+}
+
 function toVariantNameArray(product: ProductInput | BulkProductInput) {
   return (product.variants ?? []).map((variant) =>
     typeof variant === "string" ? variant : variant.name,
@@ -77,6 +115,26 @@ function toVariantNameArray(product: ProductInput | BulkProductInput) {
 }
 
 export class RestDashboardApi implements DashboardApi {
+  async getMyBusinesses(): Promise<MyBusinessesResponse> {
+    return request<MyBusinessesResponse>("/me/businesses");
+  }
+
+  async getMyBusiness(): Promise<BusinessSummary> {
+    return request<BusinessSummary>("/me/business");
+  }
+
+  async createMyBusiness(input: CreateBusinessInput): Promise<BusinessSummary> {
+    return request<BusinessSummary>("/me/businesses", {
+      method: "POST",
+      body: {
+        name: input.name,
+        description: input.description ?? null,
+        city: input.city ?? null,
+        shipping_policy: input.shipping_policy ?? null,
+      },
+    });
+  }
+
   async getOverview(businessId: number): Promise<OverviewData> {
     return request<OverviewData>(`/business/${businessId}/overview`);
   }

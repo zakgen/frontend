@@ -37,6 +37,7 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/sonner";
 import { getDashboardApi } from "@/lib/api";
+import { getBusinessHref } from "@/lib/routes";
 import {
   formatDateTime,
   getSafeWhatsAppReadinessMessage,
@@ -338,7 +339,7 @@ export function OrderConfirmationTestDialog({
                       Rafraichir la session
                     </Button>
                     <Button asChild type="button" variant="ghost">
-                      <Link href="/dashboard/chats">
+                      <Link href={getBusinessHref(businessId, "/order-confirmations")}>
                         <ExternalLink className="h-4 w-4" />
                         Ouvrir la vue sessions
                       </Link>

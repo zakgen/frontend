@@ -12,7 +12,7 @@ export async function handleSupabaseAuthRedirect(request: Request) {
   const code = requestUrl.searchParams.get("code");
   const tokenHash = requestUrl.searchParams.get("token_hash");
   const type = requestUrl.searchParams.get("type") as EmailOtpType | null;
-  const next = getSafeRedirectPath(requestUrl.searchParams.get("next"), "/dashboard");
+  const next = getSafeRedirectPath(requestUrl.searchParams.get("next"), "/");
 
   if (!isConfigured) {
     return NextResponse.redirect(

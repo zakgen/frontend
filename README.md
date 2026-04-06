@@ -6,14 +6,16 @@ Frontend V0 demo pour Rasil, la surface operations pour boutiques e-commerce mar
 
 - Interface App Router Next.js 15
 - Authentification Supabase pour proteger le dashboard
+- Flux reel de creation et selection de boutiques via le backend
 - UI French-first, light-mode-first
 - Tableau de bord
-- Conversations type inbox
+- Chats type inbox
 - Profil de la boutique
 - Produits avec ajout, edition, suppression et import en masse
 - Connaissance IA
 - Integrations avec WhatsApp hero card et plateformes e-commerce
-- Couche d'API typée avec adaptateur mock pour la demo
+- Confirmations de commande
+- Couche d'API typée avec propagation des headers d'identite utilisateur
 
 ## Stack
 
@@ -27,12 +29,14 @@ Frontend V0 demo pour Rasil, la surface operations pour boutiques e-commerce mar
 
 ## Etat actuel
 
-Cette phase est volontairement **UI-first**.
+Le frontend est maintenant branche sur le backend pour:
 
-- Les ecrans tournent sur des donnees mock/demo
-- L'acces au dashboard est prive via Supabase Auth
-- L'architecture d'adaptation API reste en place pour brancher le backend plus tard
-- Aucune dependance backend n'est requise pour la demo UX
+- l'authentification frontend via Supabase
+- la resolution des boutiques du compte connecte avec `GET /me/businesses`
+- la creation reelle d'une boutique avec `POST /me/businesses`
+- toutes les requetes backend authentifiees avec `X-Auth-User-Id` et `X-Auth-User-Email`
+
+Les ecrans business-scopes continuent d'utiliser les endpoints `/business/{businessId}/...`.
 
 ## Lancer le projet
 
@@ -42,7 +46,7 @@ npm install
 npm run dev
 ```
 
-Ouvrez ensuite [http://localhost:3000/dashboard](http://localhost:3000/dashboard).
+Ouvrez ensuite [http://localhost:3000](http://localhost:3000).
 
 ## Variables d'environnement
 
@@ -52,27 +56,32 @@ Copiez `.env.example` vers `.env.local` :
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
-NEXT_PUBLIC_DEMO_BUSINESS_ID=1
 ```
 
 Note:
 - `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_ANON_KEY` sont requis pour la connexion
-- `NEXT_PUBLIC_API_BASE_URL` est documentee pour la phase d'integration backend
-- la V0 actuelle utilise le mock adapter comme source principale
+- `NEXT_PUBLIC_API_BASE_URL` est requis pour les endpoints backend
+- le frontend n'utilise plus de business demo en dur
 
 ## Authentification
 
 - routes publiques: `/login`, `/signup`, `/forgot-password`, `/reset-password`
-- routes privees: `/dashboard/*`
-- la protection est assuree par Supabase SSR via `middleware.ts` et une verification serveur dans `app/dashboard/layout.tsx`
+- routes privees: `/businesses`, `/b/[businessId]/*`, plus les redirects legacy `/dashboard/*`
+- la protection est assuree par Supabase SSR via `middleware.ts`
 - la page `/auth/callback` finalise les liens de confirmation email et de reinitialisation
+- apres connexion:
+  - 0 boutique => onboarding `/businesses`
+  - 1 boutique => redirection directe vers `/b/{id}`
+  - plusieurs boutiques => selection sur `/businesses`
 
 ## Structure
 
 ```text
 frontend/
-  app/dashboard/
+  app/b/[businessId]/
+  app/businesses/
   components/
+    businesses/
     chats/
     dashboard/
     forms/
@@ -97,8 +106,8 @@ npm run lint
 
 ## Phase suivante
 
-Quand vous serez pret a brancher le backend:
+Pour l'integration backend:
 
-- conservez les composants UI tels quels
-- etendez l'adapter dans `frontend/lib/api/`
-- remplacez progressivement les donnees mock par les endpoints reels
+- assurez-vous que `/me/businesses`, `/me/business` et `POST /me/businesses` sont disponibles
+- assurez-vous que le backend accepte `X-Auth-User-Id` et `X-Auth-User-Email`
+- conservez les endpoints business-scopes existants `/business/{businessId}/...`

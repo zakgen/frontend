@@ -5,6 +5,7 @@ import { CheckCircle2, Loader2, RefreshCcw, Sparkles } from "lucide-react";
 
 import { ErrorState } from "@/components/dashboard/error-state";
 import { PageHeader } from "@/components/dashboard/page-header";
+import { useLocale } from "@/components/providers/locale-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,6 +17,7 @@ import { formatDateTime, getKnowledgeStateLabel } from "@/lib/utils";
 const api = getDashboardApi();
 
 export function RagSyncPanel({ businessId }: { businessId: number }) {
+  const { t } = useLocale();
   const queryClient = useQueryClient();
   const syncQuery = useQuery({
     queryKey: queryKeys.syncStatus(businessId),
@@ -27,13 +29,13 @@ export function RagSyncPanel({ businessId }: { businessId: number }) {
     onSuccess: (data) => {
       queryClient.setQueryData(queryKeys.syncStatus(businessId), data);
       queryClient.invalidateQueries({ queryKey: queryKeys.overview(businessId) });
-      toast.success("Votre assistant est pret", {
-        description: "Il connait maintenant tous vos produits et informations boutique.",
+      toast.success(t("rag.toastSuccess"), {
+        description: t("rag.toastSuccessDescription"),
       });
     },
     onError: () => {
-      toast.error("La mise a jour n'a pas pu se terminer", {
-        description: "Reessayez dans quelques instants.",
+      toast.error(t("rag.toastError"), {
+        description: t("rag.toastErrorDescription"),
       });
     },
   });
@@ -41,8 +43,8 @@ export function RagSyncPanel({ businessId }: { businessId: number }) {
   if (syncQuery.isError) {
     return (
       <ErrorState
-        title="Connaissance IA indisponible"
-        description="Le statut actuel de votre assistant n'a pas pu etre charge."
+        title={t("rag.unavailableTitle")}
+        description={t("rag.unavailableDescription")}
         onRetry={() => syncQuery.refetch()}
       />
     );
@@ -54,9 +56,9 @@ export function RagSyncPanel({ businessId }: { businessId: number }) {
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="Connaissance IA"
-        title="Gardez votre assistant a jour"
-        description="Chaque fois que vous modifiez vos produits ou les informations de votre boutique, mettez votre assistant a jour pour conserver des reponses precises et actuelles."
+        eyebrow={t("rag.eyebrow")}
+        title={t("rag.title")}
+        description={t("rag.description")}
       />
 
       <div className="mx-auto max-w-3xl space-y-5">
@@ -79,12 +81,12 @@ export function RagSyncPanel({ businessId }: { businessId: number }) {
             <div className="space-y-3">
               <h2 className="font-display text-3xl font-semibold">
                 {visualState === "up_to_date"
-                  ? "Votre assistant est a jour"
+                  ? t("rag.status.up_to_date")
                   : visualState === "recommended"
-                    ? "Mise a jour recommandee"
+                    ? t("rag.status.recommended")
                     : visualState === "running"
-                      ? "Mise a jour en cours..."
-                      : "Une intervention est necessaire"}
+                      ? t("rag.status.running")
+                      : t("rag.status.error")}
               </h2>
               <p className="text-sm leading-6 text-muted-foreground">
                 {visualState === "up_to_date"
@@ -100,7 +102,7 @@ export function RagSyncPanel({ businessId }: { businessId: number }) {
               ) : (
                 <RefreshCcw className="h-4 w-4" />
               )}
-              Mettre a jour l&apos;assistant
+              {t("rag.button")}
             </Button>
           </CardContent>
         </Card>
@@ -109,7 +111,7 @@ export function RagSyncPanel({ businessId }: { businessId: number }) {
           <CardContent className="space-y-4 p-6">
             <div className="flex items-center gap-2 font-medium text-primary">
               <Sparkles className="h-4 w-4" />
-              Comment ca fonctionne ?
+              {t("rag.howItWorks")}
             </div>
             <p className="text-sm leading-6 text-muted-foreground">
               Votre assistant apprend a partir de vos produits et des informations de votre boutique.
@@ -123,7 +125,7 @@ export function RagSyncPanel({ businessId }: { businessId: number }) {
           <CardContent className="space-y-4 p-6">
             <div className="flex items-center gap-2 font-medium">
               <CheckCircle2 className="h-4 w-4 text-primary" />
-              Ce que votre assistant connait actuellement
+              {t("rag.whatItKnows")}
             </div>
             <div className="space-y-3 text-sm">
               <div className="flex items-center justify-between rounded-2xl border border-border/70 bg-background/70 px-4 py-3">

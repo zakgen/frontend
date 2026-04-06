@@ -7,6 +7,8 @@ import {
   BotMessageSquare,
   CheckCircle2,
   Clock3,
+  Download,
+  FileJson,
   Loader2,
   PhoneCall,
   RefreshCcw,
@@ -126,6 +128,69 @@ function filterSessions(
   );
 }
 
+function downloadFile(filename: string, content: string, type: string) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+function exportSessionsCsv(sessions: OrderConfirmationSessionSummary[]) {
+  const headers = [
+    "session_id",
+    "order_id",
+    "customer_name",
+    "phone",
+    "preferred_language",
+    "status",
+    "needs_human",
+    "last_detected_intent",
+    "started_at",
+    "last_customer_message_at",
+    "updated_at",
+  ];
+  const rows = sessions.map((session) =>
+    [
+      session.id,
+      session.order_id,
+      session.customer_name ?? "",
+      session.phone,
+      session.preferred_language ?? "",
+      session.status,
+      session.needs_human ? "true" : "false",
+      session.last_detected_intent ?? "",
+      session.started_at ?? "",
+      session.last_customer_message_at ?? "",
+      session.updated_at ?? "",
+    ]
+      .map((value) => `"${String(value).replaceAll('"', '""')}"`)
+      .join(","),
+  );
+
+  downloadFile(
+    `order-confirmation-sessions-${Date.now()}.csv`,
+    [headers.join(","), ...rows].join("\n"),
+    "text/csv;charset=utf-8",
+  );
+}
+
+function getConfirmedSessions(sessions: OrderConfirmationSessionSummary[]) {
+  return sessions.filter((session) => session.status === "confirmed");
+}
+
+function exportSessionJson(detail: OrderConfirmationSessionDetail) {
+  downloadFile(
+    `order-confirmation-session-${detail.id}.json`,
+    JSON.stringify(detail, null, 2),
+    "application/json;charset=utf-8",
+  );
+}
+
 export function OrderConfirmationsPanel({ businessId }: { businessId: number }) {
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] =
@@ -229,26 +294,39 @@ export function OrderConfirmationsPanel({ businessId }: { businessId: number }) 
     ).length,
     needsHuman: (listQuery.data?.sessions ?? []).filter((session) => session.needs_human).length,
   };
+  const selectedSession =
+    filteredSessions.find((session) => session.id === selectedSessionId) ?? null;
+  const confirmedSessions = getConfirmedSessions(listQuery.data?.sessions ?? []);
 
   return (
     <div className="space-y-8">
       <PageHeader
         eyebrow="Confirmations de commande"
-        title="Suivez les confirmations de commande WhatsApp"
-        description="Inspectez les sessions actives, verifiez l'historique des evenements et appliquez des actions manuelles quand le flux doit etre assiste."
+        title="Suivi des confirmations"
+        description="Suivez les sessions, ouvrez une commande, exportez les donnees et appliquez une action si besoin."
         trailing={
-          <Button
-            variant="outline"
-            onClick={() => listQuery.refetch()}
-            disabled={listQuery.isFetching}
-          >
-            {listQuery.isFetching ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <RefreshCcw className="h-4 w-4" />
-            )}
-            Actualiser
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              onClick={() => exportSessionsCsv(confirmedSessions)}
+              disabled={!confirmedSessions.length}
+            >
+              <Download className="h-4 w-4" />
+              Exporter les confirmées
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => listQuery.refetch()}
+              disabled={listQuery.isFetching}
+            >
+              {listQuery.isFetching ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCcw className="h-4 w-4" />
+              )}
+              Actualiser
+            </Button>
+          </div>
         }
       />
 
@@ -262,7 +340,20 @@ export function OrderConfirmationsPanel({ businessId }: { businessId: number }) 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.08fr)_minmax(360px,0.92fr)]">
         <Card>
           <CardHeader className="space-y-4">
-            <CardTitle>Sessions</CardTitle>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <CardTitle>Sessions</CardTitle>
+                <div className="mt-1 text-sm text-muted-foreground">
+                  {filteredSessions.length} session{filteredSessions.length > 1 ? "s" : ""} visible
+                  {statusFilter !== "all" ? `s, filtre ${getStatusMeta(statusFilter).label.toLowerCase()}` : ""}
+                </div>
+              </div>
+              {selectedSession ? (
+                <div className="rounded-2xl border border-border/70 bg-background/70 px-3 py-2 text-xs text-muted-foreground">
+                  Selection actuelle: <span className="font-medium text-foreground">{selectedSession.order_id}</span>
+                </div>
+              ) : null}
+            </div>
             <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_240px]">
               <div className="relative">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -325,25 +416,37 @@ export function OrderConfirmationsPanel({ businessId }: { businessId: number }) 
                               <Badge variant="warning">Relais humain</Badge>
                             ) : null}
                           </div>
-                          <div className="text-sm text-muted-foreground">
-                            {maskPhoneNumber(session.phone)}
+                          <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                            <span>{maskPhoneNumber(session.phone)}</span>
+                            {session.preferred_language ? (
+                              <>
+                                <span className="text-border">•</span>
+                                <span>{session.preferred_language}</span>
+                              </>
+                            ) : null}
                           </div>
                         </div>
                         <div className="text-right text-xs text-muted-foreground">
-                          <div>Session #{session.id}</div>
+                          <div>Session #{session.id.slice(0, 8)}</div>
                           <div>Commande #{session.order_id}</div>
                         </div>
                       </div>
 
-                      <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                        <MiniInfo label="Langue" value={session.preferred_language || "N/D"} />
-                        <MiniInfo label="Intention" value={session.last_detected_intent || "Aucune"} />
-                        <MiniInfo label="Demarree" value={formatDateTime(session.started_at)} />
-                        <MiniInfo
-                          label="Dernier message client"
-                          value={formatDateTime(session.last_customer_message_at)}
-                        />
-                        <MiniInfo label="Mise a jour" value={formatDateTime(session.updated_at)} />
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <Badge variant="outline">
+                          Intention: {session.last_detected_intent || "Aucune"}
+                        </Badge>
+                        <Badge variant="secondary">
+                          Demarree: {formatDateTime(session.started_at)}
+                        </Badge>
+                        <Badge variant="secondary">
+                          Mise a jour: {formatDateTime(session.updated_at)}
+                        </Badge>
+                        {session.last_customer_message_at ? (
+                          <Badge variant="secondary">
+                            Dernier message: {formatDateTime(session.last_customer_message_at)}
+                          </Badge>
+                        ) : null}
                       </div>
                     </button>
                   ))}
@@ -360,8 +463,23 @@ export function OrderConfirmationsPanel({ businessId }: { businessId: number }) 
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Detail de session</CardTitle>
+          <CardHeader className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <CardTitle>Détail de session</CardTitle>
+              {detailQuery.data ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => exportSessionJson(detailQuery.data)}
+                >
+                  <FileJson className="h-4 w-4" />
+                  Exporter la session
+                </Button>
+              ) : null}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              Ouvrez l&apos;historique complet, les articles et les actions disponibles pour la session choisie.
+            </div>
           </CardHeader>
           <CardContent className="pt-0">
             {!selectedSessionId ? (

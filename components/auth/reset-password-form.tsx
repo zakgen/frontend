@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 
 import { FormField } from "@/components/forms/form-field";
+import { useLocale } from "@/components/providers/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/sonner";
@@ -27,12 +28,13 @@ export function ResetPasswordForm() {
     },
   });
   const { isConfigured } = getSupabaseConfig();
+  const { t } = useLocale();
 
   return (
     <div className="space-y-5">
       {!isConfigured ? (
         <div className="rounded-2xl border border-amber-500/25 bg-amber-500/8 px-4 py-3 text-sm text-amber-700">
-          Configurez Supabase avant de tester la mise a jour du mot de passe.
+          {t("auth.supabaseMissingReset")}
         </div>
       ) : null}
 
@@ -40,7 +42,7 @@ export function ResetPasswordForm() {
         className="space-y-4"
         onSubmit={form.handleSubmit(async (values) => {
           if (!isConfigured) {
-            toast.error("Configuration Supabase manquante.");
+            toast.error(t("auth.toast.configMissing"));
             return;
           }
 
@@ -51,48 +53,48 @@ export function ResetPasswordForm() {
           });
 
           if (error) {
-            toast.error("Impossible de mettre a jour le mot de passe", {
+            toast.error(t("auth.toast.resetError"), {
               description: error.message,
             });
             setPending(false);
             return;
           }
 
-          toast.success("Mot de passe mis a jour.");
-          router.replace("/dashboard");
+          toast.success(t("auth.toast.resetSuccess"));
+          router.replace("/");
           router.refresh();
         })}
       >
-        <FormField label="Nouveau mot de passe" error={form.formState.errors.password?.message}>
+        <FormField label={t("auth.newPasswordLabel")} error={form.formState.errors.password?.message}>
           <Input
             type="password"
             autoComplete="new-password"
-            placeholder="Au moins 6 caracteres"
+            placeholder={t("auth.passwordPlaceholder")}
             {...form.register("password")}
           />
         </FormField>
 
         <FormField
-          label="Confirmer le nouveau mot de passe"
+          label={t("auth.newPasswordConfirmLabel")}
           error={form.formState.errors.confirmPassword?.message}
         >
           <Input
             type="password"
             autoComplete="new-password"
-            placeholder="Confirmez le mot de passe"
+            placeholder={t("auth.passwordConfirmPlaceholder")}
             {...form.register("confirmPassword")}
           />
         </FormField>
 
         <Button type="submit" className="w-full" size="lg" disabled={pending}>
           {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-          Enregistrer le nouveau mot de passe
+          {t("auth.reset.submit")}
         </Button>
       </form>
 
       <div className="text-sm text-muted-foreground">
         <Link href="/login" className="text-primary">
-          Retour a la connexion
+          {t("auth.backToLogin")}
         </Link>
       </div>
     </div>

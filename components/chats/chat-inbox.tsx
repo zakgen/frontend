@@ -2,11 +2,12 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Search, SendHorizonal, UserRound } from "lucide-react";
+import { Loader2, RefreshCcw, Search, SendHorizonal, UserRound } from "lucide-react";
 
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { ErrorState } from "@/components/dashboard/error-state";
 import { PageHeader } from "@/components/dashboard/page-header";
+import { useLocale } from "@/components/providers/locale-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -34,6 +35,7 @@ function groupByDate(conversations: ConversationSummary[]) {
 }
 
 export function ChatInbox({ businessId }: { businessId: number }) {
+  const { t } = useLocale();
   const [phoneSearch, setPhoneSearch] = useState("");
   const [intent, setIntent] = useState("all");
   const [direction, setDirection] = useState("all");
@@ -130,8 +132,8 @@ export function ChatInbox({ businessId }: { businessId: number }) {
   if (chatsQuery.isError) {
     return (
       <ErrorState
-        title="Conversations indisponibles"
-        description="Les conversations WhatsApp n'ont pas pu etre chargees."
+        title={t("chats.unavailableTitle")}
+        description={t("chats.unavailableDescription")}
         onRetry={() => chatsQuery.refetch()}
       />
     );
@@ -140,9 +142,9 @@ export function ChatInbox({ businessId }: { businessId: number }) {
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="Chats"
-        title="Passez en revue les echanges avec vos clientes"
-        description="Consultez vos conversations comme une boite de reception, reperez l'intention principale et les cas qui demandent un relais humain."
+        eyebrow={t("chats.eyebrow")}
+        title={t("chats.title")}
+        description={t("chats.description")}
       />
 
       <Card className="overflow-hidden">
@@ -156,16 +158,16 @@ export function ChatInbox({ businessId }: { businessId: number }) {
                     className="pl-9"
                     value={phoneSearch}
                     onChange={(event) => setPhoneSearch(event.target.value)}
-                    placeholder="Rechercher un numero"
+                    placeholder={t("chats.searchPhone")}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <Select value={intent} onValueChange={setIntent}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Intention" />
+                      <SelectValue placeholder={t("chats.intent")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Toutes les intentions</SelectItem>
+                      <SelectItem value="all">{t("chats.allIntents")}</SelectItem>
                       {intents.map((item) => (
                         <SelectItem key={item} value={item}>
                           {getIntentMeta(item).label}
@@ -175,12 +177,12 @@ export function ChatInbox({ businessId }: { businessId: number }) {
                   </Select>
                   <Select value={direction} onValueChange={setDirection}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Direction" />
+                      <SelectValue placeholder={t("chats.direction")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Toutes</SelectItem>
-                      <SelectItem value="inbound">Entrant</SelectItem>
-                      <SelectItem value="outbound">Sortant</SelectItem>
+                      <SelectItem value="all">{t("chats.allDirections")}</SelectItem>
+                      <SelectItem value="inbound">{t("chats.inbound")}</SelectItem>
+                      <SelectItem value="outbound">{t("chats.outbound")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -193,7 +195,7 @@ export function ChatInbox({ businessId }: { businessId: number }) {
                       : "border-border bg-background/70 text-muted-foreground hover:bg-muted/60"
                   }`}
                 >
-                  Montrer seulement les conversations qui demandent un relais humain
+                  {t("chats.humanOnly")}
                 </button>
               </div>
               <Separator />
@@ -300,6 +302,25 @@ export function ChatInbox({ businessId }: { businessId: number }) {
                         <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
                           <span>{threadQuery.data.messages.length} messages</span>
                           <span>Premier contact : {formatDateTime(threadQuery.data.first_contact_at)}</span>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              void Promise.all([
+                                threadQuery.refetch(),
+                                chatsQuery.refetch(),
+                              ]);
+                            }}
+                            disabled={threadQuery.isFetching || chatsQuery.isFetching}
+                          >
+                            {threadQuery.isFetching || chatsQuery.isFetching ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <RefreshCcw className="h-4 w-4" />
+                            )}
+                            Actualiser
+                          </Button>
                         </div>
                       </div>
                     </div>

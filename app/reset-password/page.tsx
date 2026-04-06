@@ -1,12 +1,15 @@
 import { AuthShell } from "@/components/auth/auth-shell";
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
+import { getServerTranslator } from "@/lib/i18n/server";
 
-export default function ResetPasswordPage() {
+export default async function ResetPasswordPage() {
+  const { t } = await getServerTranslator();
+
   return (
     <AuthShell
-      eyebrow="Nouveau mot de passe"
-      title="Choisissez un nouveau mot de passe"
-      description="Cette etape finalise la recuperation de votre acces avant de revenir dans le dashboard."
+      eyebrow={t("auth.reset.eyebrow")}
+      title={t("auth.reset.title")}
+      description={t("auth.reset.description")}
     >
       <ResetPasswordForm />
     </AuthShell>

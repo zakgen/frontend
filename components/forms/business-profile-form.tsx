@@ -22,6 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/sonner";
 import { getDashboardApi } from "@/lib/api";
 import { queryKeys } from "@/lib/api/query-keys";
+import { getBusinessHref } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 import { businessProfileSchema, type BusinessProfileFormValues } from "@/lib/validators/business";
 
@@ -201,7 +202,7 @@ export function BusinessProfileForm({ businessId }: { businessId: number }) {
               </p>
             </div>
             <Button asChild>
-              <Link href="/dashboard/rag">Ouvrir Connaissance IA</Link>
+              <Link href={getBusinessHref(businessId, "/rag")}>Ouvrir Connaissance IA</Link>
             </Button>
           </CardContent>
         </Card>

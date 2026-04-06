@@ -19,6 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/sonner";
 import { getDashboardApi } from "@/lib/api";
 import { queryKeys } from "@/lib/api/query-keys";
+import { getBusinessHref } from "@/lib/routes";
 import type { BulkProductInput, Product, ProductInput } from "@/lib/types";
 import { formatCurrency, getStockStatusLabel } from "@/lib/utils";
 import type { ProductFormValues } from "@/lib/validators/product";
@@ -153,7 +154,7 @@ export function ProductsManager({ businessId }: { businessId: number }) {
               <p className="mt-1 text-sm text-muted-foreground">{syncQuery.data.last_result}</p>
             </div>
             <Button asChild>
-              <Link href="/dashboard/rag">Mettre a jour l&apos;assistant</Link>
+              <Link href={getBusinessHref(businessId, "/rag")}>Mettre a jour l&apos;assistant</Link>
             </Button>
           </CardContent>
         </Card>

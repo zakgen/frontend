@@ -1,7 +1,7 @@
-import { BusinessProfileForm } from "@/components/forms/business-profile-form";
+import { redirect } from "next/navigation";
 
-const businessId = Number(process.env.NEXT_PUBLIC_DEMO_BUSINESS_ID ?? "1");
+import { resolveDashboardRedirect } from "@/lib/business/server";
 
-export default function BusinessPage() {
-  return <BusinessProfileForm businessId={businessId} />;
+export default async function BusinessPage() {
+  redirect(await resolveDashboardRedirect("/business"));
 }

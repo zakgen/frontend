@@ -293,7 +293,7 @@ export function IntegrationsPanel({ businessId }: { businessId: number }) {
       />
 
       {checklist.completed_count < checklist.total ? (
-        <SetupChecklistBanner checklist={checklist} />
+        <SetupChecklistBanner checklist={checklist} businessId={businessId} />
       ) : null}
 
       <Card className="border-primary/15">

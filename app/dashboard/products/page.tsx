@@ -1,7 +1,7 @@
-import { ProductsManager } from "@/components/products/products-manager";
+import { redirect } from "next/navigation";
 
-const businessId = Number(process.env.NEXT_PUBLIC_DEMO_BUSINESS_ID ?? "1");
+import { resolveDashboardRedirect } from "@/lib/business/server";
 
-export default function ProductsPage() {
-  return <ProductsManager businessId={businessId} />;
+export default async function ProductsPage() {
+  redirect(await resolveDashboardRedirect("/products"));
 }

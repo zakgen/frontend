@@ -1,18 +1,12 @@
 import { redirect } from "next/navigation";
 
-import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { getAuthenticatedUser } from "@/lib/supabase/server";
+import { resolveDashboardRedirect } from "@/lib/business/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardLayout({
-  children,
+  children: _children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const user = await getAuthenticatedUser();
-
-  if (!user) {
-    redirect("/login?next=/dashboard");
-  }
-
-  return <DashboardShell userEmail={user.email ?? null}>{children}</DashboardShell>;
+  _children;
+  redirect(await resolveDashboardRedirect());
 }

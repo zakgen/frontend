@@ -1,26 +1,12 @@
+"use client";
+
 import { MessageCircleMore, Package2, Sparkles } from "lucide-react";
 
+import { LanguageSwitcher } from "@/components/i18n/language-switcher";
+import { useLocale } from "@/components/providers/locale-provider";
 import { RasilLogo } from "@/components/brand/rasil-logo";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-
-const highlights = [
-  {
-    icon: MessageCircleMore,
-    title: "Conversations lisibles",
-    description: "Retrouvez les demandes clients par numero, intention et priorite humaine.",
-  },
-  {
-    icon: Package2,
-    title: "Catalogue maitrise",
-    description: "Gardez vos fiches produits nettes, a jour et utilisables par l'equipe.",
-  },
-  {
-    icon: Sparkles,
-    title: "Flux plus fiable",
-    description: "Le profil boutique, les confirmations et la connaissance IA restent alignes.",
-  },
-];
 
 export function AuthShell({
   eyebrow,
@@ -33,6 +19,25 @@ export function AuthShell({
   description: string;
   children: React.ReactNode;
 }>) {
+  const { t } = useLocale();
+  const highlights = [
+    {
+      icon: MessageCircleMore,
+      title: t("auth.highlight.conversations.title"),
+      description: t("auth.highlight.conversations.description"),
+    },
+    {
+      icon: Package2,
+      title: t("auth.highlight.catalog.title"),
+      description: t("auth.highlight.catalog.description"),
+    },
+    {
+      icon: Sparkles,
+      title: t("auth.highlight.flows.title"),
+      description: t("auth.highlight.flows.description"),
+    },
+  ];
+
   return (
     <div className="relative min-h-screen overflow-hidden px-4 py-8 lg:px-8">
       <div className="absolute inset-0 surface-lines opacity-30" />
@@ -43,13 +48,15 @@ export function AuthShell({
           </div>
 
           <div className="mt-12 space-y-5">
-            <Badge className="w-fit">Acces prive</Badge>
+            <div className="flex items-center justify-between gap-4">
+              <Badge className="w-fit">{t("auth.privateAccess")}</Badge>
+              <LanguageSwitcher />
+            </div>
             <h1 className="font-display text-5xl font-semibold leading-tight tracking-[-0.05em] text-balance">
-              Clarifiez vos commandes et gardez la maitrise de vos operations.
+              {t("auth.heroTitle")}
             </h1>
             <p className="max-w-xl text-base text-muted-foreground">
-              Rasil rassemble les conversations, le catalogue, les confirmations et les details
-              boutique dans un cockpit plus clair pour votre equipe.
+              {t("auth.heroDescription")}
             </p>
           </div>
 
@@ -74,9 +81,9 @@ export function AuthShell({
           </div>
 
           <div className="mt-auto rounded-[28px] border border-primary/15 bg-primary/8 p-5">
-            <div className="text-sm font-medium text-primary">Pret pour la suite</div>
+            <div className="text-sm font-medium text-primary">{t("auth.readyTitle")}</div>
             <p className="mt-1 text-sm text-muted-foreground">
-              Order Clarity &amp; Operational Control, avec une authentification privee geree par Supabase.
+              {t("auth.readyDescription")}
             </p>
           </div>
         </section>
@@ -84,7 +91,12 @@ export function AuthShell({
         <section className="flex items-center">
           <Card className="w-full rounded-[32px] bg-card/94 shadow-panel">
             <CardHeader className="space-y-4 p-8 pb-6">
-              <Badge className="w-fit">{eyebrow}</Badge>
+              <div className="flex items-center justify-between gap-4">
+                <Badge className="w-fit">{eyebrow}</Badge>
+                <div className="lg:hidden">
+                  <LanguageSwitcher />
+                </div>
+              </div>
               <div className="space-y-2">
                 <CardTitle className="font-display text-3xl font-semibold tracking-[-0.04em]">
                   {title}

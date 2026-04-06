@@ -1,7 +1,7 @@
-import { OrderConfirmationsPanel } from "@/components/order-confirmations/order-confirmations-panel";
+import { redirect } from "next/navigation";
 
-const businessId = Number(process.env.NEXT_PUBLIC_DEMO_BUSINESS_ID ?? "1");
+import { resolveDashboardRedirect } from "@/lib/business/server";
 
-export default function OrderConfirmationsPage() {
-  return <OrderConfirmationsPanel businessId={businessId} />;
+export default async function OrderConfirmationsPage() {
+  redirect(await resolveDashboardRedirect("/order-confirmations"));
 }

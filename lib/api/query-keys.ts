@@ -1,4 +1,6 @@
 export const queryKeys = {
+  myBusinesses: () => ["my-businesses"] as const,
+  myBusiness: () => ["my-business"] as const,
   overview: (businessId: number) => ["overview", businessId] as const,
   business: (businessId: number) => ["business", businessId] as const,
   chats: (businessId: number, filters: Record<string, string | undefined>) =>

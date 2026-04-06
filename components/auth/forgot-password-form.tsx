@@ -7,6 +7,7 @@ import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { FormField } from "@/components/forms/form-field";
+import { useLocale } from "@/components/providers/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/sonner";
@@ -27,12 +28,13 @@ export function ForgotPasswordForm() {
     },
   });
   const { isConfigured } = getSupabaseConfig();
+  const { t } = useLocale();
 
   return (
     <div className="space-y-5">
       {!isConfigured ? (
         <div className="rounded-2xl border border-amber-500/25 bg-amber-500/8 px-4 py-3 text-sm text-amber-700">
-          Configurez Supabase avant de tester la reinitialisation de mot de passe.
+          {t("auth.supabaseMissingForgot")}
         </div>
       ) : null}
 
@@ -40,7 +42,7 @@ export function ForgotPasswordForm() {
         className="space-y-4"
         onSubmit={form.handleSubmit(async (values) => {
           if (!isConfigured) {
-            toast.error("Configuration Supabase manquante.");
+            toast.error(t("auth.toast.configMissing"));
             return;
           }
 
@@ -52,38 +54,38 @@ export function ForgotPasswordForm() {
           });
 
           if (error) {
-            toast.error("Impossible d'envoyer le lien", {
+            toast.error(t("auth.toast.forgotError"), {
               description: error.message,
             });
             setPending(false);
             return;
           }
 
-          toast.success("Lien envoye", {
-            description: "Verifiez votre boite email pour definir un nouveau mot de passe.",
+          toast.success(t("auth.toast.forgotSuccess"), {
+            description: t("auth.toast.forgotSuccessDescription"),
           });
           form.reset();
           setPending(false);
         })}
       >
-        <FormField label="Adresse email" error={form.formState.errors.email?.message}>
+        <FormField label={t("auth.emailLabel")} error={form.formState.errors.email?.message}>
           <Input
             type="email"
             autoComplete="email"
-            placeholder="vous@boutique.ma"
+            placeholder={t("auth.emailPlaceholder")}
             {...form.register("email")}
           />
         </FormField>
 
         <Button type="submit" className="w-full" size="lg" disabled={pending}>
           {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-          Envoyer le lien
+          {t("auth.forgot.submit")}
         </Button>
       </form>
 
       <div className="text-sm text-muted-foreground">
         <Link href="/login" className="text-primary">
-          Retour a la connexion
+          {t("auth.backToLogin")}
         </Link>
       </div>
     </div>

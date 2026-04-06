@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 
 import { FormField } from "@/components/forms/form-field";
+import { useLocale } from "@/components/providers/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/sonner";
@@ -34,12 +35,13 @@ export function SignupForm({
   });
   const { isConfigured } = getSupabaseConfig();
   const redirectPath = getSafeRedirectPath(nextPath);
+  const { t } = useLocale();
 
   return (
     <div className="space-y-5">
       {!isConfigured ? (
         <div className="rounded-2xl border border-amber-500/25 bg-amber-500/8 px-4 py-3 text-sm text-amber-700">
-          La creation de compte necessite vos variables Supabase dans `.env.local`.
+          {t("auth.supabaseMissingSignup")}
         </div>
       ) : null}
 
@@ -47,7 +49,7 @@ export function SignupForm({
         className="space-y-4"
         onSubmit={form.handleSubmit(async (values) => {
           if (!isConfigured) {
-            toast.error("Configuration Supabase manquante.");
+            toast.error(t("auth.toast.configMissing"));
             return;
           }
 
@@ -69,7 +71,7 @@ export function SignupForm({
           });
 
           if (error) {
-            toast.error("Creation du compte impossible", {
+            toast.error(t("auth.toast.signupError"), {
               description: error.message,
             });
             setPending(false);
@@ -77,14 +79,14 @@ export function SignupForm({
           }
 
           if (data.session) {
-            toast.success("Compte cree.");
+            toast.success(t("auth.toast.signupSuccess"));
             router.replace(redirectPath);
             router.refresh();
             return;
           }
 
-          toast.success("Confirmez votre email", {
-            description: "Un lien de validation vient d'etre envoye.",
+          toast.success(t("auth.toast.confirmEmail"), {
+            description: t("auth.toast.confirmEmailDescription"),
           });
           router.replace(
             `/login?message=${encodeURIComponent(
@@ -94,54 +96,54 @@ export function SignupForm({
           router.refresh();
         })}
       >
-        <FormField label="Nom de la boutique" error={form.formState.errors.storeName?.message}>
+        <FormField label={t("auth.storeName")} error={form.formState.errors.storeName?.message}>
           <Input
             autoComplete="organization"
-            placeholder="Maison Yasmine"
+            placeholder={t("auth.storeNamePlaceholder")}
             {...form.register("storeName")}
           />
         </FormField>
 
-        <FormField label="Adresse email" error={form.formState.errors.email?.message}>
+        <FormField label={t("auth.emailLabel")} error={form.formState.errors.email?.message}>
           <Input
             type="email"
             autoComplete="email"
-            placeholder="vous@boutique.ma"
+            placeholder={t("auth.emailPlaceholder")}
             {...form.register("email")}
           />
         </FormField>
 
-        <FormField label="Mot de passe" error={form.formState.errors.password?.message}>
+        <FormField label={t("auth.passwordLabel")} error={form.formState.errors.password?.message}>
           <Input
             type="password"
             autoComplete="new-password"
-            placeholder="Au moins 6 caracteres"
+            placeholder={t("auth.passwordPlaceholder")}
             {...form.register("password")}
           />
         </FormField>
 
         <FormField
-          label="Confirmer le mot de passe"
+          label={t("auth.passwordConfirmLabel")}
           error={form.formState.errors.confirmPassword?.message}
         >
           <Input
             type="password"
             autoComplete="new-password"
-            placeholder="Confirmez le mot de passe"
+            placeholder={t("auth.passwordConfirmPlaceholder")}
             {...form.register("confirmPassword")}
           />
         </FormField>
 
         <Button type="submit" className="w-full" size="lg" disabled={pending}>
           {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-          Creer mon acces
+          {t("auth.signup.submit")}
         </Button>
       </form>
 
       <div className="text-sm text-muted-foreground">
-        Deja un compte ?{" "}
+        {t("auth.alreadyAccount")}{" "}
         <Link href={`/login?next=${encodeURIComponent(redirectPath)}`} className="text-primary">
-          Se connecter
+          {t("auth.loginLink")}
         </Link>
       </div>
     </div>

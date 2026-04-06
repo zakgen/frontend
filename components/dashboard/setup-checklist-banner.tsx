@@ -1,30 +1,32 @@
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 
+import { useLocale } from "@/components/providers/locale-provider";
 import type { SetupChecklist } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { mapDashboardHrefToBusiness } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
 export function SetupChecklistBanner({
   checklist,
+  businessId,
   compact = false,
 }: {
   checklist: SetupChecklist;
+  businessId?: number;
   compact?: boolean;
 }) {
+  const { t } = useLocale();
+
   return (
     <Card className="border-primary/15 bg-primary/5">
       <CardContent className={cn("space-y-4 p-5", compact && "p-4")}>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="text-sm font-medium text-primary">
-              Configuration de Rasil
-            </div>
-            <div className="mt-1 text-sm text-muted-foreground">
-              {checklist.completed_count} / {checklist.total} etapes completees
-            </div>
-          </div>
+        <div className="text-sm text-muted-foreground">
+          {t("dashboard.setup.progress", {
+            completed: checklist.completed_count,
+            total: checklist.total,
+          })}
         </div>
         <div className={cn("grid gap-3", compact ? "md:grid-cols-3" : "md:grid-cols-3")}>
           {checklist.items.map((item) => (
@@ -49,7 +51,15 @@ export function SetupChecklistBanner({
                   <div className="mt-1 text-xs text-muted-foreground">{item.detail}</div>
                   {!item.completed && item.action_href && item.action_label ? (
                     <Button asChild variant="ghost" className="mt-2 h-auto px-0 py-0 text-primary">
-                      <Link href={item.action_href}>{item.action_label}</Link>
+                      <Link
+                        href={
+                          businessId
+                            ? mapDashboardHrefToBusiness(item.action_href, businessId)
+                            : item.action_href
+                        }
+                      >
+                        {item.action_label}
+                      </Link>
                     </Button>
                   ) : null}
                 </div>

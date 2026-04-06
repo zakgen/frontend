@@ -7,7 +7,7 @@ import { Boxes, Bot, MessageSquareText, MessagesSquare, Sparkles } from "lucide-
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { ErrorState } from "@/components/dashboard/error-state";
 import { PageHeader } from "@/components/dashboard/page-header";
-import { SetupChecklistBanner } from "@/components/dashboard/setup-checklist-banner";
+import { useLocale } from "@/components/providers/locale-provider";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getDashboardApi } from "@/lib/api";
 import { queryKeys } from "@/lib/api/query-keys";
+import { getBusinessHref } from "@/lib/routes";
 import {
   formatCurrency,
   formatRelativeTime,
@@ -26,6 +27,7 @@ import {
 const api = getDashboardApi();
 
 export function OverviewPanel({ businessId }: { businessId: number }) {
+  const { t } = useLocale();
   const overviewQuery = useQuery({
     queryKey: queryKeys.overview(businessId),
     queryFn: () => api.getOverview(businessId),
@@ -47,37 +49,33 @@ export function OverviewPanel({ businessId }: { businessId: number }) {
   if (overviewQuery.isError || !overviewQuery.data) {
     return (
       <ErrorState
-        title="Tableau de bord indisponible"
-        description="Les indicateurs du jour n'ont pas pu etre charges."
+        title={t("dashboard.overview.unavailableTitle")}
+        description={t("dashboard.overview.unavailableDescription")}
         onRetry={() => overviewQuery.refetch()}
       />
     );
   }
 
-  const { stats, recent_chats, recent_products, ai_insight, sync_notice, checklist } =
+  const { stats, recent_chats, recent_products, ai_insight, sync_notice } =
     overviewQuery.data;
 
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="Tableau de bord"
-        title="Le point rapide sur vos operations"
-        description="En quelques secondes, voyez si Rasil suit bien les conversations, si votre catalogue est a jour et s'il reste une etape de configuration a terminer."
+        eyebrow={t("dashboard.overview.eyebrow")}
+        title={t("dashboard.overview.title")}
+        description={t("dashboard.overview.description")}
       />
-
-      {checklist.completed_count < checklist.total ? (
-        <SetupChecklistBanner checklist={checklist} compact />
-      ) : null}
 
       {sync_notice ? (
         <Card className="border-amber-500/20 bg-amber-500/5">
           <CardContent className="flex flex-col gap-4 p-5 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <div className="font-medium text-amber-700">Mise a jour recommandee</div>
+              <div className="font-medium text-amber-700">{t("dashboard.overview.updateRecommended")}</div>
               <p className="mt-1 text-sm text-muted-foreground">{sync_notice}</p>
             </div>
             <Button asChild>
-              <Link href="/dashboard/rag">Mettre a jour l&apos;assistant</Link>
+              <Link href={getBusinessHref(businessId, "/rag")}>{t("dashboard.overview.updateAssistant")}</Link>
             </Button>
           </CardContent>
         </Card>
@@ -85,27 +83,27 @@ export function OverviewPanel({ businessId }: { businessId: number }) {
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <StatCard
-          label="Conversations"
+          label={t("dashboard.overview.stats.conversations")}
           value={stats.total_conversations.toString()}
-          detail="Aujourd'hui"
+          detail={t("dashboard.overview.today")}
           icon={<MessagesSquare className="h-5 w-5" />}
         />
         <StatCard
-          label="Messages traites"
+          label={t("dashboard.overview.stats.messagesHandled")}
           value={stats.messages_handled.toString()}
-          detail="Toutes directions confondues"
+          detail={t("dashboard.overview.allDirections")}
           icon={<MessageSquareText className="h-5 w-5" />}
         />
         <StatCard
-          label="Produits actifs"
+          label={t("dashboard.overview.stats.activeProducts")}
           value={stats.active_products.toString()}
-          detail="Disponibles dans le catalogue"
+          detail={t("dashboard.overview.catalogAvailable")}
           icon={<Boxes className="h-5 w-5" />}
         />
         <StatCard
-          label="Connaissance IA"
+          label={t("dashboard.overview.stats.knowledge")}
           value={stats.ai_knowledge_status}
-          detail="Etat actuel de l'assistant"
+          detail={t("dashboard.overview.currentState")}
           icon={<Sparkles className="h-5 w-5" />}
         />
       </section>
@@ -123,16 +121,16 @@ export function OverviewPanel({ businessId }: { businessId: number }) {
 
         <Card>
           <CardHeader className="flex-row items-center justify-between">
-            <CardTitle>Produits recents</CardTitle>
+            <CardTitle>{t("dashboard.overview.recentProducts")}</CardTitle>
             <Button asChild variant="ghost" className="h-auto px-0 text-primary">
-              <Link href="/dashboard/products">Voir tous</Link>
+              <Link href={getBusinessHref(businessId, "/products")}>{t("dashboard.overview.viewAll")}</Link>
             </Button>
           </CardHeader>
           <CardContent className="space-y-4">
             {recent_products.length === 0 ? (
               <EmptyState
-                title="Aucun produit pour l'instant"
-                description="Ajoutez vos produits pour que votre assistant puisse les recommander."
+                title={t("dashboard.overview.noProductsTitle")}
+                description={t("dashboard.overview.noProductsDescription")}
               />
             ) : (
               recent_products.map((product) => (
@@ -172,16 +170,16 @@ export function OverviewPanel({ businessId }: { businessId: number }) {
       <section className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
         <Card>
           <CardHeader className="flex-row items-center justify-between">
-            <CardTitle>Conversations recentes</CardTitle>
+            <CardTitle>{t("dashboard.overview.recentChats")}</CardTitle>
             <Button asChild variant="ghost" className="h-auto px-0 text-primary">
-              <Link href="/dashboard/chats">Voir toutes</Link>
+              <Link href={getBusinessHref(businessId, "/chats")}>{t("dashboard.overview.viewAllChats")}</Link>
             </Button>
           </CardHeader>
           <CardContent className="space-y-4">
             {recent_chats.length === 0 ? (
               <EmptyState
-                title="Aucune conversation"
-                description="Des que des clientes vous ecrivent sur WhatsApp, leurs conversations apparaissent ici."
+                title={t("dashboard.overview.noChatsTitle")}
+                description={t("dashboard.overview.noChatsDescription")}
               />
             ) : (
               recent_chats.map((chat) => (
@@ -204,7 +202,7 @@ export function OverviewPanel({ businessId }: { businessId: number }) {
                         {getIntentMeta(intent).label}
                       </Badge>
                     ))}
-                    {chat.needs_human ? <Badge variant="warning">Relais humain</Badge> : null}
+                    {chat.needs_human ? <Badge variant="warning">{t("dashboard.overview.humanRelay")}</Badge> : null}
                   </div>
                 </div>
               ))

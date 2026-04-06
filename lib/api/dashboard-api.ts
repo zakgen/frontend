@@ -1,11 +1,14 @@
 import type {
   BusinessProfile,
+  BusinessSummary,
   BulkProductInput,
   ChatReplyInput,
   ChatFilters,
   ConversationSummary,
   ConversationThread,
+  CreateBusinessInput,
   IntegrationsData,
+  MyBusinessesResponse,
   OrderConfirmationActionInput,
   OrderConfirmationIngestResponse,
   OrderConfirmationRequest,
@@ -21,6 +24,9 @@ import type {
 } from "@/lib/types";
 
 export interface DashboardApi {
+  getMyBusinesses(): Promise<MyBusinessesResponse>;
+  getMyBusiness(): Promise<BusinessSummary>;
+  createMyBusiness(input: CreateBusinessInput): Promise<BusinessSummary>;
   getOverview(businessId: number): Promise<OverviewData>;
   getBusiness(businessId: number): Promise<BusinessProfile>;
   updateBusiness(

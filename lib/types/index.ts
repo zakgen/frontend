@@ -61,6 +61,30 @@ export type BusinessProfile = {
   updated_at: string;
 };
 
+export type BusinessSummary = {
+  id: number;
+  name: string;
+  description?: string | null;
+  city?: string | null;
+  shipping_policy?: string | null;
+  delivery_zones: string[];
+  payment_methods: string[];
+  profile_metadata: Record<string, unknown>;
+  updated_at?: string | null;
+};
+
+export type MyBusinessesResponse = {
+  businesses: BusinessSummary[];
+  current_business_id: number | null;
+};
+
+export type CreateBusinessInput = {
+  name: string;
+  description?: string;
+  city?: string;
+  shipping_policy?: string;
+};
+
 export type ProductVariant = {
   id: string;
   name: string;
