@@ -25,6 +25,7 @@ import type {
   OrderConfirmationSessionStatus,
   Product,
   ProductInput,
+  ShopifyProductImportResult,
   ProductVariant,
   SyncStatus,
 } from "@/lib/types";
@@ -240,6 +241,14 @@ export class MockDashboardApi implements DashboardApi {
       total: products.length,
       categories,
     };
+  }
+
+  async importShopifyProducts(
+    businessId: number,
+  ): Promise<ShopifyProductImportResult> {
+    throw new Error(
+      "L'import Shopify necessite un backend reel. Configurez NEXT_PUBLIC_API_BASE_URL.",
+    );
   }
 
   async createProduct(businessId: number, input: ProductInput) {

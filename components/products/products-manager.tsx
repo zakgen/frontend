@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Edit3, PackagePlus, Search, Trash2, Upload } from "lucide-react";
+import { Edit3, Loader2, PackagePlus, Search, Store, Trash2, Upload } from "lucide-react";
 
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { ErrorState } from "@/components/dashboard/error-state";
@@ -21,7 +21,7 @@ import { getDashboardApi } from "@/lib/api";
 import { queryKeys } from "@/lib/api/query-keys";
 import { getBusinessHref } from "@/lib/routes";
 import type { BulkProductInput, Product, ProductInput } from "@/lib/types";
-import { formatCurrency, getStockStatusLabel } from "@/lib/utils";
+import { formatCurrency, formatRelativeTime, getStockStatusLabel } from "@/lib/utils";
 import type { ProductFormValues } from "@/lib/validators/product";
 
 const api = getDashboardApi();
@@ -54,15 +54,20 @@ export function ProductsManager({ businessId }: { businessId: number }) {
     queryKey: queryKeys.products(businessId, `${search}:${category}`),
     queryFn: () => api.getProducts(businessId, search, category),
   });
+  const integrationsQuery = useQuery({
+    queryKey: queryKeys.integrations(businessId),
+    queryFn: () => api.getIntegrations(businessId),
+  });
   const syncQuery = useQuery({
     queryKey: queryKeys.syncStatus(businessId),
     queryFn: () => api.getSyncStatus(businessId),
   });
 
   const baseInvalidate = () => {
-    queryClient.invalidateQueries({ queryKey: ["products", businessId] });
-    queryClient.invalidateQueries({ queryKey: queryKeys.overview(businessId) });
-    queryClient.invalidateQueries({ queryKey: queryKeys.syncStatus(businessId) });
+    void queryClient.invalidateQueries({ queryKey: ["products", businessId] });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.overview(businessId) });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.syncStatus(businessId) });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.integrations(businessId) });
   };
 
   const createMutation = useMutation({
@@ -109,9 +114,32 @@ export function ProductsManager({ businessId }: { businessId: number }) {
         description: error instanceof Error ? error.message : "Verifiez le format du fichier.",
       }),
   });
+  const shopifyImportMutation = useMutation({
+    mutationFn: () => api.importShopifyProducts(businessId),
+    onSuccess: (result) => {
+      toast.success(`Imported ${result.imported_products} products from Shopify.`);
+      baseInvalidate();
+    },
+    onError: (error) =>
+      toast.error("Import Shopify impossible", {
+        description:
+          error instanceof Error
+            ? error.message
+            : "Impossible d'importer les produits depuis Shopify.",
+      }),
+  });
 
   const products = useMemo(() => productsQuery.data?.products ?? [], [productsQuery.data?.products]);
   const categories = productsQuery.data?.categories ?? [];
+  const shopifyIntegration =
+    integrationsQuery.data?.platforms.find((platform) => platform.id === "shopify") ?? null;
+  const hasShopifyContext = Boolean(shopifyIntegration);
+  const shopifyConnected = shopifyIntegration?.status === "connected";
+  const shopifyImportDisabledReason = !hasShopifyContext
+    ? null
+    : !shopifyConnected
+      ? "Connect Shopify first to import products."
+      : null;
   const summary = useMemo(
     () => ({
       total: productsQuery.data?.total ?? 0,
@@ -129,6 +157,21 @@ export function ProductsManager({ businessId }: { businessId: number }) {
         description="Ajoutez vos produits, regroupez-les par categorie et preparez votre assistant a repondre sur le prix, le stock et les variantes."
         trailing={
           <div className="flex flex-wrap gap-3">
+            {hasShopifyContext ? (
+              <Button
+                variant="outline"
+                onClick={() => shopifyImportMutation.mutate()}
+                disabled={shopifyImportMutation.isPending || Boolean(shopifyImportDisabledReason)}
+                title={shopifyImportDisabledReason ?? undefined}
+              >
+                {shopifyImportMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Store className="h-4 w-4" />
+                )}
+                {shopifyImportMutation.isPending ? "Importing..." : "Import from Shopify"}
+              </Button>
+            ) : null}
             <Button variant="outline" onClick={() => setBulkOpen(true)}>
               <Upload className="h-4 w-4" />
               Importer en masse
@@ -145,6 +188,57 @@ export function ProductsManager({ businessId }: { businessId: number }) {
           </div>
         }
       />
+
+      {hasShopifyContext ? (
+        <Card className="border-border/70">
+          <CardContent className="flex flex-col gap-4 p-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant={shopifyConnected ? "success" : "secondary"}>
+                  {shopifyConnected ? "Shopify connecte" : "Shopify non connecte"}
+                </Badge>
+                {shopifyIntegration?.shop_domain ? (
+                  <span className="text-sm text-muted-foreground">
+                    Shopify: {shopifyIntegration.shop_domain}
+                  </span>
+                ) : null}
+              </div>
+              <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted-foreground">
+                <span>Imported products: {shopifyIntegration?.imported_products ?? 0}</span>
+                <span>
+                  Last import: {formatRelativeTime(shopifyIntegration?.last_product_import_at)}
+                </span>
+                {shopifyIntegration?.last_product_import_status ? (
+                  <span>Status: {shopifyIntegration.last_product_import_status}</span>
+                ) : null}
+              </div>
+              {shopifyImportDisabledReason ? (
+                <p className="text-sm text-muted-foreground">{shopifyImportDisabledReason}</p>
+              ) : null}
+              {shopifyIntegration?.last_product_import_status === "failed" &&
+              shopifyIntegration.last_product_import_error ? (
+                <p className="text-sm text-destructive">
+                  {shopifyIntegration.last_product_import_error}
+                </p>
+              ) : null}
+            </div>
+            {shopifyConnected ? (
+              <Button
+                variant="outline"
+                onClick={() => shopifyImportMutation.mutate()}
+                disabled={shopifyImportMutation.isPending}
+              >
+                {shopifyImportMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Store className="h-4 w-4" />
+                )}
+                {shopifyImportMutation.isPending ? "Importing..." : "Import from Shopify"}
+              </Button>
+            ) : null}
+          </CardContent>
+        </Card>
+      ) : null}
 
       {syncQuery.data && !syncQuery.data.ai_ready ? (
         <Card className="border-amber-500/20 bg-amber-500/5">

@@ -232,6 +232,9 @@ export type CommerceIntegration = {
   last_activity_at?: string | null;
   last_sync_back_at?: string | null;
   webhook_status?: string | null;
+  last_product_import_at?: string | null;
+  last_product_import_status?: "success" | "failed" | string | null;
+  last_product_import_error?: string | null;
 };
 
 export type ComingSoonIntegration = {
@@ -251,6 +254,16 @@ export type ProductListResult = {
   products: Product[];
   total: number;
   categories: string[];
+};
+
+export type ShopifyProductImportResult = {
+  business_id: number;
+  shop_domain: string | null;
+  fetched_products: number;
+  imported_products: number;
+  product_ids: Array<number | string>;
+  last_product_import_at: string | null;
+  last_product_import_status: "success" | "failed" | string;
 };
 
 export type StoreOrderItemInput = {

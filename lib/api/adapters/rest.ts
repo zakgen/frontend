@@ -19,6 +19,7 @@ import type {
   OverviewData,
   Product,
   ProductInput,
+  ShopifyProductImportResult,
   ProductListResult,
   SyncStatus,
 } from "@/lib/types";
@@ -204,6 +205,15 @@ export class RestDashboardApi implements DashboardApi {
         category: category && category !== "all" ? category : undefined,
       },
     });
+  }
+
+  async importShopifyProducts(businessId: number): Promise<ShopifyProductImportResult> {
+    return request<ShopifyProductImportResult>(
+      `/business/${businessId}/integrations/shopify/products/import`,
+      {
+        method: "POST",
+      },
+    );
   }
 
   async createProduct(businessId: number, input: ProductInput): Promise<Product> {

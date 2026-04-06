@@ -18,6 +18,7 @@ import type {
   OverviewData,
   Product,
   ProductInput,
+  ShopifyProductImportResult,
   ProductListResult,
   SyncStatus,
   CommercePlatformId,
@@ -48,6 +49,7 @@ export interface DashboardApi {
     search?: string,
     category?: string,
   ): Promise<ProductListResult>;
+  importShopifyProducts(businessId: number): Promise<ShopifyProductImportResult>;
   createProduct(businessId: number, input: ProductInput): Promise<Product>;
   updateProduct(productId: string, input: ProductInput): Promise<Product>;
   deleteProduct(productId: string): Promise<void>;
