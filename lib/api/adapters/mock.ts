@@ -337,11 +337,11 @@ export class MockDashboardApi implements DashboardApi {
     return buildIntegrationsData(readDemoState());
   }
 
-  getShopifyConnectUrl(
+  async getShopifyConnectAuthUrl(
     businessId: number,
     shop: string,
     returnTo: string,
-  ): string {
+  ): Promise<string> {
     throw new Error(
       "La connexion Shopify necessite un backend reel. Configurez NEXT_PUBLIC_API_BASE_URL.",
     );

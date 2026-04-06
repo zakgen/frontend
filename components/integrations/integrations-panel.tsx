@@ -236,7 +236,7 @@ export function IntegrationsPanel({ businessId }: { businessId: number }) {
     setShopifyDialogOpen(true);
   }
 
-  function handleLaunchShopifyConnect() {
+  async function handleLaunchShopifyConnect() {
     if (shopifyConnectDisabledReason) {
       toast.error(shopifyConnectDisabledReason);
       return;
@@ -250,9 +250,20 @@ export function IntegrationsPanel({ businessId }: { businessId: number }) {
     const shopDomain = normalized.normalized;
 
     const returnTo = `${window.location.origin}${window.location.pathname}`;
-    const connectUrl = api.getShopifyConnectUrl(businessId, shopDomain, returnTo);
+    let authUrl: string;
+    try {
+      authUrl = await api.getShopifyConnectAuthUrl(businessId, shopDomain, returnTo);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Impossible de demarrer la connexion Shopify.";
+      setShopifyInputError(message);
+      toast.error(message);
+      return;
+    }
     const popup = window.open(
-      connectUrl,
+      authUrl,
       "shopify-connect",
       "popup=yes,width=720,height=820,resizable=yes,scrollbars=yes",
     );

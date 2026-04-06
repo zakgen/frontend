@@ -58,11 +58,11 @@ export interface DashboardApi {
   getSyncStatus(businessId: number): Promise<SyncStatus>;
   triggerSync(businessId: number): Promise<SyncStatus>;
   getIntegrations(businessId: number): Promise<IntegrationsData>;
-  getShopifyConnectUrl(
+  getShopifyConnectAuthUrl(
     businessId: number,
     shop: string,
     returnTo: string,
-  ): string;
+  ): Promise<string>;
   setWhatsAppConnection(
     businessId: number,
     status: "connected" | "disconnected",

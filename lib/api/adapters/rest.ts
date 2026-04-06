@@ -284,12 +284,26 @@ export class RestDashboardApi implements DashboardApi {
     return request<IntegrationsData>(`/business/${businessId}/integrations`);
   }
 
-  getShopifyConnectUrl(businessId: number, shop: string, returnTo: string): string {
-    const params = new URLSearchParams({
-      shop,
-      return_to: returnTo,
-    });
-    return `${getBaseUrl()}/business/${businessId}/integrations/shopify/connect?${params.toString()}`;
+  async getShopifyConnectAuthUrl(
+    businessId: number,
+    shop: string,
+    returnTo: string,
+  ): Promise<string> {
+    const response = await request<{ auth_url?: string }>(
+      `/business/${businessId}/integrations/shopify/connect`,
+      {
+        query: {
+          shop,
+          return_to: returnTo,
+        },
+      },
+    );
+
+    if (!response.auth_url) {
+      throw new Error("La reponse Shopify est incomplete. Aucun lien OAuth n'a ete retourne.");
+    }
+
+    return response.auth_url;
   }
 
   async setWhatsAppConnection(
