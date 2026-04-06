@@ -1,25 +1,20 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import {
   Copy,
   ExternalLink,
-  CheckCircle2,
   Clock3,
   Loader2,
   Lock,
-  MessageCircleMore,
-  PackageCheck,
   RefreshCw,
-  Send,
   Smartphone,
   Sparkles,
   Store,
 } from "lucide-react";
 
 import { ErrorState } from "@/components/dashboard/error-state";
-import { OrderConfirmationTestDialog } from "@/components/integrations/order-confirmation-test-dialog";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { SetupChecklistBanner } from "@/components/dashboard/setup-checklist-banner";
 import { Badge } from "@/components/ui/badge";
@@ -97,10 +92,6 @@ function formatWebhookLabel(webhookStatus: string | null | undefined) {
 }
 
 export function IntegrationsPanel({ businessId }: { businessId: number }) {
-  const [testOpen, setTestOpen] = useState(false);
-  const [orderTestOpen, setOrderTestOpen] = useState(false);
-  const [testPrompt, setTestPrompt] = useState("Est-ce que vous livrez a Fes ?");
-  const [testResponse, setTestResponse] = useState("");
   const [shopifyDialogOpen, setShopifyDialogOpen] = useState(false);
   const [shopifyShopInput, setShopifyShopInput] = useState("");
   const [shopifyInputError, setShopifyInputError] = useState("");
@@ -114,27 +105,15 @@ export function IntegrationsPanel({ businessId }: { businessId: number }) {
     queryFn: () => api.getIntegrations(businessId),
   });
 
-  const testMutation = useMutation({
-    mutationFn: () => api.sendWhatsAppTestMessage(businessId, testPrompt),
-    onSuccess: (reply) => {
-      setTestResponse(reply);
-    },
-  });
   const integrationsData = integrationsQuery.data;
   const checklist = integrationsData?.checklist;
   const whatsapp = integrationsData?.whatsapp;
   const platforms = integrationsData?.platforms ?? [];
-  const coming_soon = integrationsData?.coming_soon ?? [];
   const shopify = platforms.find((platform) => platform.id === "shopify") ?? null;
-  const otherPlatforms = platforms.filter((platform) => platform.id !== "shopify");
+  const upcomingPlatforms = platforms.filter(
+    (platform) => platform.id === "youcan" || platform.id === "woocommerce",
+  );
   const hasLiveBackend = Boolean(process.env.NEXT_PUBLIC_API_BASE_URL?.trim());
-  const orderTestDisabledReason = !businessId
-    ? "Un business doit etre selectionne avant de lancer un test."
-    : !whatsapp || whatsapp.status !== "connected"
-      ? "WhatsApp must be connected before sending a test order confirmation."
-      : !hasLiveBackend
-        ? "Ce test necessite un backend reel. Configurez NEXT_PUBLIC_API_BASE_URL."
-        : null;
   const shopifyConnectDisabledReason = !businessId
     ? "Un business doit etre selectionne avant de connecter Shopify."
     : !hasLiveBackend
@@ -325,19 +304,6 @@ export function IntegrationsPanel({ businessId }: { businessId: number }) {
                 </div>
               </div>
             </div>
-            <div className="flex flex-wrap gap-3">
-              <Button
-                onClick={() => setOrderTestOpen(true)}
-                disabled={Boolean(orderTestDisabledReason)}
-              >
-                <PackageCheck className="h-4 w-4" />
-                Send Test Order Confirmation
-              </Button>
-              <Button variant="outline" onClick={() => setTestOpen(true)}>
-                <MessageCircleMore className="h-4 w-4" />
-                Tester une reponse
-              </Button>
-            </div>
           </div>
 
           <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
@@ -416,12 +382,6 @@ export function IntegrationsPanel({ businessId }: { businessId: number }) {
             personnalises seront disponibles, cette page gardera exactement les deux choix de
             routage deja affiches ici.
           </div>
-
-          {orderTestDisabledReason ? (
-            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/8 p-4 text-sm text-amber-700">
-              {orderTestDisabledReason}
-            </div>
-          ) : null}
         </CardContent>
       </Card>
 
@@ -583,7 +543,7 @@ export function IntegrationsPanel({ businessId }: { businessId: number }) {
               </CardContent>
             </Card>
           ) : null}
-          {otherPlatforms.map((platform) => (
+          {upcomingPlatforms.map((platform) => (
             <Card key={platform.id} className="border-dashed opacity-80">
               <CardContent className="space-y-4 p-5">
                 <div className="flex items-start justify-between gap-3">
@@ -599,29 +559,6 @@ export function IntegrationsPanel({ businessId }: { businessId: number }) {
                 </div>
                 <Button type="button" variant="outline" disabled className="w-full">
                   Disponible bientot
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
-
-      <section className="space-y-4">
-        <div className="flex items-center gap-2">
-          <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-          <h2 className="text-lg font-semibold">Bientot disponibles</h2>
-        </div>
-        <div className="grid gap-4 md:grid-cols-3">
-          {coming_soon.map((item) => (
-            <Card key={item.id} className="opacity-60">
-              <CardContent className="space-y-3 p-5">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="font-medium">{item.name}</div>
-                  <Badge variant="secondary">Bientot</Badge>
-                </div>
-                <div className="text-sm text-muted-foreground">{item.description}</div>
-                <Button variant="ghost" className="h-auto px-0 text-primary" disabled>
-                  En attente
                 </Button>
               </CardContent>
             </Card>
@@ -672,42 +609,6 @@ export function IntegrationsPanel({ businessId }: { businessId: number }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <Dialog open={testOpen} onOpenChange={setTestOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Envoyer un message test</DialogTitle>
-            <DialogDescription>
-              Verifiez en quelques secondes le type de reponse que votre assistant donnerait a une cliente.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Input value={testPrompt} onChange={(event) => setTestPrompt(event.target.value)} />
-            <Button onClick={() => testMutation.mutate()} disabled={testMutation.isPending}>
-              {testMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              Tester la reponse
-            </Button>
-            {testResponse ? (
-              <div className="rounded-2xl border border-primary/20 bg-primary/8 p-4 text-sm text-muted-foreground">
-                {testResponse}
-              </div>
-            ) : null}
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => setTestOpen(false)}>
-              Fermer
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <OrderConfirmationTestDialog
-        businessId={businessId}
-        open={orderTestOpen}
-        onOpenChange={setOrderTestOpen}
-        whatsappConnected={whatsapp.status === "connected"}
-        disabledReason={orderTestDisabledReason}
-      />
     </div>
   );
 }
