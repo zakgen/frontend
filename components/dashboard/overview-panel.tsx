@@ -61,8 +61,8 @@ export function OverviewPanel({ businessId }: { businessId: number }) {
     <div className="space-y-8">
       <PageHeader
         eyebrow="Tableau de bord"
-        title="Le point rapide sur votre assistant"
-        description="En quelques secondes, voyez si ZakBot repond bien, si votre catalogue est a jour et s'il reste une etape de configuration a terminer."
+        title="Le point rapide sur vos operations"
+        description="En quelques secondes, voyez si Rasil suit bien les conversations, si votre catalogue est a jour et s'il reste une etape de configuration a terminer."
       />
 
       {checklist.completed_count < checklist.total ? (

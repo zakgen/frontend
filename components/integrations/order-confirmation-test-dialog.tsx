@@ -55,7 +55,7 @@ const api = getDashboardApi();
 
 const defaultValues: TestOrderConfirmationFormValues = {
   customer_phone: "+212600000001",
-  customer_name: "Client Test ZakBot",
+  customer_name: "Client Test Rasil",
   preferred_language: "french",
   delivery_city: "Casablanca",
   delivery_address: "Maarif, Casablanca",
@@ -185,7 +185,7 @@ export function OrderConfirmationTestDialog({
     >
       <DialogContent className="max-h-[88vh] overflow-y-auto sm:max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Send Test Order Confirmation</DialogTitle>
+          <DialogTitle>Envoyer une confirmation test</DialogTitle>
           <DialogDescription>
             Envoyez une commande test au backend puis inspectez la session de confirmation creee.
           </DialogDescription>
@@ -213,14 +213,14 @@ export function OrderConfirmationTestDialog({
           >
             <div className="grid gap-4 md:grid-cols-2">
               <FormField
-                label="Customer phone"
+                label="Telephone client"
                 error={form.formState.errors.customer_phone?.message}
               >
                 <Input {...form.register("customer_phone")} />
               </FormField>
 
               <FormField
-                label="Customer name"
+                label="Nom client"
                 error={form.formState.errors.customer_name?.message}
               >
                 <Input {...form.register("customer_name")} />
@@ -231,7 +231,7 @@ export function OrderConfirmationTestDialog({
                 name="preferred_language"
                 render={({ field, fieldState }) => (
                   <FormField
-                    label="Preferred language"
+                    label="Langue preferee"
                     error={fieldState.error?.message}
                   >
                     <Select value={field.value} onValueChange={field.onChange}>
@@ -239,9 +239,9 @@ export function OrderConfirmationTestDialog({
                         <SelectValue placeholder="Choisir une langue" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="french">French</SelectItem>
+                        <SelectItem value="french">Francais</SelectItem>
                         <SelectItem value="darija">Darija</SelectItem>
-                        <SelectItem value="english">English</SelectItem>
+                        <SelectItem value="english">Anglais</SelectItem>
                       </SelectContent>
                     </Select>
                   </FormField>
@@ -249,21 +249,21 @@ export function OrderConfirmationTestDialog({
               />
 
               <FormField
-                label="Total amount"
+                label="Montant total"
                 error={form.formState.errors.total_amount?.message}
               >
                 <Input type="number" min="1" step="1" {...form.register("total_amount")} />
               </FormField>
 
               <FormField
-                label="Delivery city"
+                label="Ville de livraison"
                 error={form.formState.errors.delivery_city?.message}
               >
                 <Input {...form.register("delivery_city")} />
               </FormField>
 
               <FormField
-                label="Delivery address"
+                label="Adresse de livraison"
                 error={form.formState.errors.delivery_address?.message}
               >
                 <Input {...form.register("delivery_address")} />
@@ -273,23 +273,23 @@ export function OrderConfirmationTestDialog({
             <div className="rounded-3xl border border-border/70 bg-background/70 p-4">
               <div className="flex items-center gap-2">
                 <PackageCheck className="h-4 w-4 text-primary" />
-                <div className="font-medium">Default line item</div>
+                <div className="font-medium">Article par defaut</div>
               </div>
               <div className="mt-4 grid gap-4 md:grid-cols-3">
                 <FormField
-                  label="Product name"
+                  label="Nom produit"
                   error={form.formState.errors.items?.[0]?.product_name?.message}
                 >
                   <Input {...form.register("items.0.product_name")} />
                 </FormField>
                 <FormField
-                  label="Quantity"
+                  label="Quantite"
                   error={form.formState.errors.items?.[0]?.quantity?.message}
                 >
                   <Input type="number" min="1" {...form.register("items.0.quantity")} />
                 </FormField>
                 <FormField
-                  label="Variant"
+                  label="Variante"
                   error={form.formState.errors.items?.[0]?.variant?.message}
                 >
                   <Input {...form.register("items.0.variant")} />
@@ -307,7 +307,7 @@ export function OrderConfirmationTestDialog({
                 ) : (
                   <CheckCircle2 className="h-4 w-4" />
                 )}
-                Send Test Order Confirmation
+                Envoyer la confirmation test
               </Button>
             </DialogFooter>
           </form>
@@ -335,12 +335,12 @@ export function OrderConfirmationTestDialog({
                       ) : (
                         <RefreshCcw className="h-4 w-4" />
                       )}
-                      Refresh Session
+                      Rafraichir la session
                     </Button>
                     <Button asChild type="button" variant="ghost">
                       <Link href="/dashboard/chats">
                         <ExternalLink className="h-4 w-4" />
-                        Open Sessions View
+                        Ouvrir la vue sessions
                       </Link>
                     </Button>
                   </div>
@@ -348,17 +348,17 @@ export function OrderConfirmationTestDialog({
 
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                   <ResultCard label="Order id" value={lastResult.order.id} />
-                  <ResultCard label="External order id" value={lastResult.order.external_order_id} />
+                  <ResultCard label="Commande externe" value={lastResult.order.external_order_id} />
                   <ResultCard label="Session id" value={sessionDetail.id} />
-                  <ResultCard label="Session status" value={sessionDetail.status} />
+                  <ResultCard label="Statut session" value={sessionDetail.status} />
                   <ResultCard
-                    label="Confirmation message sent"
+                    label="Message envoye"
                     value={lastResult.confirmation_message_sent ? "true" : "false"}
                     tone={lastResult.confirmation_message_sent ? "success" : "warning"}
                   />
-                  <ResultCard label="Customer phone" value={sessionDetail.phone} />
+                  <ResultCard label="Telephone client" value={sessionDetail.phone} />
                   <ResultCard
-                    label="Preferred language"
+                    label="Langue preferee"
                     value={sessionDetail.preferred_language || "Non renseignee"}
                   />
                 </div>
@@ -366,7 +366,7 @@ export function OrderConfirmationTestDialog({
                 <div className="rounded-3xl border border-border/70 bg-background/70 p-4">
                   <div className="mb-3 flex items-center gap-2 font-medium">
                     <AlertTriangle className="h-4 w-4 text-primary" />
-                    Event list
+                    Liste des evenements
                   </div>
                   {sessionDetail.events.length ? (
                     <div className="space-y-3">

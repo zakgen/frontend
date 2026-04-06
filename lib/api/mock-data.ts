@@ -216,7 +216,7 @@ export const mockSyncStatus: SyncStatus = {
 
 export const mockWhatsAppIntegration: WhatsAppIntegration = {
   phone_number: "+212 6 61 23 48 90",
-  business_name: "ZakBot App",
+  business_name: "Rasil App",
   status: "connected",
   health: "healthy",
   received_messages_last_30_days: 1204,
@@ -251,7 +251,7 @@ export const mockPlatforms: CommerceIntegration[] = [
   {
     id: "zid",
     name: "Zid",
-    description: "Gardez votre catalogue Zid synchronise avec ZakBot.",
+    description: "Gardez votre catalogue Zid synchronise avec Rasil.",
     status: "disconnected",
     imported_products: 0,
     last_sync_at: null,

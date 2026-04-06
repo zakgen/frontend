@@ -25,8 +25,8 @@ export default async function LoginPage({
   return (
     <AuthShell
       eyebrow="Connexion"
-      title="Connectez-vous a votre espace ZakBot"
-      description="Accedez a vos conversations, votre catalogue et la connaissance de votre assistant depuis un espace prive."
+      title="Connectez-vous a votre espace Rasil"
+      description="Accedez a vos conversations, votre catalogue et vos flux operationnels depuis un espace prive."
     >
       <LoginForm nextPath={params.next} message={params.message} />
     </AuthShell>

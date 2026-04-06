@@ -6,7 +6,7 @@ export default function ForgotPasswordPage() {
     <AuthShell
       eyebrow="Mot de passe oublie"
       title="Recevez un lien pour reinitialiser votre acces"
-      description="Entrez l'adresse email utilisee pour ZakBot. Nous vous enverrons un lien de reinitialisation."
+      description="Entrez l'adresse email utilisee pour Rasil. Nous vous enverrons un lien de reinitialisation."
     >
       <ForgotPasswordForm />
     </AuthShell>

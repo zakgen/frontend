@@ -7,8 +7,13 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
-  title: "ZakBot Dashboard",
-  description: "Tableau de bord ZakBot pour piloter un assistant WhatsApp e-commerce.",
+  title: "Rasil",
+  description: "Rasil centralise la clarte des commandes et le controle operationnel de votre boutique.",
+  icons: {
+    icon: "/brand/rasil-icon.png",
+    shortcut: "/brand/rasil-icon.png",
+    apple: "/brand/rasil-icon.png",
+  },
 };
 
 export default function RootLayout({
@@ -16,7 +21,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="fr" suppressHydrationWarning>
-      <body>
+      <body className="font-sans">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <QueryProvider>
             {children}

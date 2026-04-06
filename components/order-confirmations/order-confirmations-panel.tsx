@@ -233,7 +233,7 @@ export function OrderConfirmationsPanel({ businessId }: { businessId: number }) 
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="Order Confirmations"
+        eyebrow="Confirmations de commande"
         title="Suivez les confirmations de commande WhatsApp"
         description="Inspectez les sessions actives, verifiez l'historique des evenements et appliquez des actions manuelles quand le flux doit etre assiste."
         trailing={
@@ -247,16 +247,16 @@ export function OrderConfirmationsPanel({ businessId }: { businessId: number }) 
             ) : (
               <RefreshCcw className="h-4 w-4" />
             )}
-            Refresh
+            Actualiser
           </Button>
         }
       />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <MetricCard label="Total sessions" value={metrics.total} />
-        <MetricCard label="Awaiting customer" value={metrics.awaiting} />
-        <MetricCard label="Confirmed" value={metrics.confirmed} />
-        <MetricCard label="Needs human" value={metrics.needsHuman} tone="warning" />
+        <MetricCard label="En attente client" value={metrics.awaiting} />
+        <MetricCard label="Confirmees" value={metrics.confirmed} />
+        <MetricCard label="Relais humain" value={metrics.needsHuman} tone="warning" />
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.08fr)_minmax(360px,0.92fr)]">
@@ -269,7 +269,7 @@ export function OrderConfirmationsPanel({ businessId }: { businessId: number }) 
                 <Input
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Rechercher par customer, phone, session id ou order id"
+                  placeholder="Rechercher par client, telephone, session id ou order id"
                   className="pl-9"
                 />
               </div>
@@ -322,7 +322,7 @@ export function OrderConfirmationsPanel({ businessId }: { businessId: number }) 
                             </span>
                             <StatusBadge status={session.status} />
                             {session.needs_human ? (
-                              <Badge variant="warning">Needs human</Badge>
+                              <Badge variant="warning">Relais humain</Badge>
                             ) : null}
                           </div>
                           <div className="text-sm text-muted-foreground">
@@ -331,28 +331,19 @@ export function OrderConfirmationsPanel({ businessId }: { businessId: number }) 
                         </div>
                         <div className="text-right text-xs text-muted-foreground">
                           <div>Session #{session.id}</div>
-                          <div>Order #{session.order_id}</div>
+                          <div>Commande #{session.order_id}</div>
                         </div>
                       </div>
 
                       <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                        <MiniInfo label="Language" value={session.preferred_language || "N/A"} />
+                        <MiniInfo label="Langue" value={session.preferred_language || "N/D"} />
+                        <MiniInfo label="Intention" value={session.last_detected_intent || "Aucune"} />
+                        <MiniInfo label="Demarree" value={formatDateTime(session.started_at)} />
                         <MiniInfo
-                          label="Intent"
-                          value={session.last_detected_intent || "Aucun"}
-                        />
-                        <MiniInfo
-                          label="Started"
-                          value={formatDateTime(session.started_at)}
-                        />
-                        <MiniInfo
-                          label="Last customer message"
+                          label="Dernier message client"
                           value={formatDateTime(session.last_customer_message_at)}
                         />
-                        <MiniInfo
-                          label="Updated"
-                          value={formatDateTime(session.updated_at)}
-                        />
+                        <MiniInfo label="Mise a jour" value={formatDateTime(session.updated_at)} />
                       </div>
                     </button>
                   ))}
@@ -360,7 +351,7 @@ export function OrderConfirmationsPanel({ businessId }: { businessId: number }) 
               </ScrollArea>
             ) : (
               <EmptyState
-                title="No order confirmation sessions yet."
+                title="Aucune session de confirmation pour l'instant."
                 description="Les nouvelles sessions apparaitront ici des qu'une commande lance un flux de confirmation."
                 icon={<BotMessageSquare className="h-8 w-8" />}
               />
@@ -370,12 +361,12 @@ export function OrderConfirmationsPanel({ businessId }: { businessId: number }) 
 
         <Card>
           <CardHeader>
-            <CardTitle>Session detail</CardTitle>
+            <CardTitle>Detail de session</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
             {!selectedSessionId ? (
               <EmptyState
-                title="Select a session"
+                title="Selectionnez une session"
                 description="Choisissez une session a gauche pour ouvrir son detail complet."
               />
             ) : detailQuery.isLoading ? (
@@ -464,47 +455,47 @@ function SessionDetail({
     <ScrollArea className="h-[720px] pr-2">
       <div className="space-y-6">
         <section className="space-y-4">
-          <SectionTitle title="Session summary" />
+          <SectionTitle title="Resume de session" />
           <div className="grid gap-3 md:grid-cols-2">
             <MiniInfo label="Session id" value={detail.id} />
             <div className="rounded-2xl border border-border/70 bg-card/70 p-3">
-              <div className="text-xs text-muted-foreground">Status</div>
+              <div className="text-xs text-muted-foreground">Statut</div>
               <div className="mt-2 flex items-center gap-2">
                 <StatusBadge status={detail.status} />
-                {detail.needs_human ? <Badge variant="warning">Needs human</Badge> : null}
+                {detail.needs_human ? <Badge variant="warning">Relais humain</Badge> : null}
               </div>
             </div>
-            <MiniInfo label="Preferred language" value={detail.preferred_language || "N/A"} />
-            <MiniInfo label="Last detected intent" value={detail.last_detected_intent || "Aucun"} />
-            <MiniInfo label="Started at" value={formatDateTime(detail.started_at)} />
-            <MiniInfo label="Confirmed at" value={formatDateTime(detail.confirmed_at)} />
-            <MiniInfo label="Declined at" value={formatDateTime(detail.declined_at)} />
-            <MiniInfo label="Updated at" value={formatDateTime(detail.updated_at)} />
+            <MiniInfo label="Langue preferee" value={detail.preferred_language || "N/D"} />
+            <MiniInfo label="Derniere intention" value={detail.last_detected_intent || "Aucune"} />
+            <MiniInfo label="Demarree le" value={formatDateTime(detail.started_at)} />
+            <MiniInfo label="Confirmee le" value={formatDateTime(detail.confirmed_at)} />
+            <MiniInfo label="Refusee le" value={formatDateTime(detail.declined_at)} />
+            <MiniInfo label="Mise a jour le" value={formatDateTime(detail.updated_at)} />
           </div>
         </section>
 
         <Separator />
 
         <section className="space-y-4">
-          <SectionTitle title="Order details" />
+          <SectionTitle title="Details de commande" />
           <div className="grid gap-3 md:grid-cols-2">
-            <MiniInfo label="External order id" value={order.external_order_id} />
-            <MiniInfo label="Source store" value={order.source_store} />
-            <MiniInfo label="Customer name" value={order.customer_name || "N/A"} />
-            <MiniInfo label="Customer phone" value={order.customer_phone} />
-            <MiniInfo label="Delivery city" value={order.delivery_city || "N/A"} />
-            <MiniInfo label="Delivery address" value={order.delivery_address || "N/A"} />
+            <MiniInfo label="Commande externe" value={order.external_order_id} />
+            <MiniInfo label="Source" value={order.source_store} />
+            <MiniInfo label="Nom client" value={order.customer_name || "N/D"} />
+            <MiniInfo label="Telephone client" value={order.customer_phone} />
+            <MiniInfo label="Ville" value={order.delivery_city || "N/D"} />
+            <MiniInfo label="Adresse" value={order.delivery_address || "N/D"} />
             <MiniInfo
-              label="Total amount"
+              label="Montant total"
               value={formatCurrency(order.total_amount, order.currency)}
             />
-            <MiniInfo label="Payment method" value={order.payment_method || "N/A"} />
-            <MiniInfo label="Order status" value={order.status} />
-            <MiniInfo label="Confirmation status" value={order.confirmation_status} />
+            <MiniInfo label="Paiement" value={order.payment_method || "N/D"} />
+            <MiniInfo label="Statut commande" value={order.status} />
+            <MiniInfo label="Statut confirmation" value={order.confirmation_status} />
           </div>
           {order.order_notes ? (
             <div className="rounded-2xl border border-border/70 bg-card/70 p-4">
-              <div className="text-xs text-muted-foreground">Order notes</div>
+              <div className="text-xs text-muted-foreground">Notes de commande</div>
               <div className="mt-2 text-sm">{order.order_notes}</div>
             </div>
           ) : null}
@@ -513,7 +504,7 @@ function SessionDetail({
         <Separator />
 
         <section className="space-y-4">
-          <SectionTitle title="Items" />
+          <SectionTitle title="Articles" />
           <div className="space-y-3">
             {order.items.map((item, index) => (
               <div key={`${item.product_name}-${index}`} className="rounded-3xl border border-border/70 bg-card/70 p-4">
@@ -522,7 +513,7 @@ function SessionDetail({
                     <div className="font-medium">{item.product_name}</div>
                     <div className="mt-1 text-sm text-muted-foreground">
                       Quantite {item.quantity}
-                      {item.variant ? ` • Variant ${item.variant}` : ""}
+                      {item.variant ? ` • Variante ${item.variant}` : ""}
                     </div>
                   </div>
                   <div className="text-right text-sm text-muted-foreground">
@@ -540,7 +531,7 @@ function SessionDetail({
         <Separator />
 
         <section className="space-y-4">
-          <SectionTitle title="Event timeline" />
+          <SectionTitle title="Chronologie des evenements" />
           {detail.events.length ? (
             <div className="space-y-3">
               {detail.events.map((event) => (
@@ -583,7 +574,7 @@ function SessionDetail({
         <Separator />
 
         <section className="space-y-4">
-          <SectionTitle title="Manual actions" />
+          <SectionTitle title="Actions manuelles" />
           <div className="grid gap-3 md:grid-cols-2">
             {(
               [
@@ -625,7 +616,7 @@ function SectionTitle({ title }: { title: string }) {
 function formatEventValue(value: unknown) {
   if (typeof value === "string") return value;
   if (typeof value === "number" || typeof value === "boolean") return String(value);
-  if (value == null) return "N/A";
+  if (value == null) return "N/D";
   return JSON.stringify(value, null, 2);
 }
 
@@ -694,7 +685,7 @@ function ActionDialog({
         </div>
         <DialogFooter>
           <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-            Cancel
+            Annuler
           </Button>
           <Button
             type="button"

@@ -74,7 +74,7 @@ export function ProductFormDialog({
         <SheetHeader>
           <SheetTitle>{initialProduct ? "Modifier le produit" : "Ajouter un produit"}</SheetTitle>
           <SheetDescription>
-            Gardez des fiches produits claires pour aider ZakBot a bien repondre sur les prix, les tailles et la disponibilite.
+            Gardez des fiches produits claires pour aider Rasil a bien repondre sur les prix, les tailles et la disponibilite.
           </SheetDescription>
         </SheetHeader>
         <form className="flex h-full flex-col" onSubmit={form.handleSubmit(onSubmit)}>

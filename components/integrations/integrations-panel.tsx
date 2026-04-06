@@ -269,7 +269,7 @@ export function IntegrationsPanel({ businessId }: { businessId: number }) {
     setShopifyWaitingStartedAt(Date.now());
     setShopifyDialogOpen(false);
     setShopifyInputError("");
-    toast.message("Waiting for Shopify connection...");
+    toast.message("Connexion Shopify en attente...");
   }
 
   if (integrationsQuery.isError) {
@@ -287,8 +287,8 @@ export function IntegrationsPanel({ businessId }: { businessId: number }) {
   return (
     <div className="space-y-8">
       <PageHeader
-        eyebrow="Integrations"
-        title="Gardez vos connexions claires et fiables"
+        eyebrow="Connexions"
+        title="Gardez vos canaux clairs et fiables"
         description="Affichez ce qui est deja actif aujourd'hui et ce qui arrive bientot, sans promettre de connexions qui ne sont pas encore ouvertes."
       />
 
@@ -307,9 +307,9 @@ export function IntegrationsPanel({ businessId }: { businessId: number }) {
                 Disponible maintenant
               </Badge>
               <div className="space-y-1">
-                <div className="text-lg font-medium">Envoi via le numero de l&apos;app ZakBot</div>
+                <div className="text-lg font-medium">Envoi via le numero de l&apos;app Rasil</div>
                 <div className="text-sm text-muted-foreground">
-                  Pour le moment, les messages partent depuis le numero WhatsApp gere par ZakBot.
+                  Pour le moment, les messages partent depuis le numero WhatsApp gere par Rasil.
                   Le branchement d&apos;un numero proprietaire viendra ensuite.
                 </div>
               </div>
@@ -345,9 +345,9 @@ export function IntegrationsPanel({ businessId }: { businessId: number }) {
                     <Badge variant="success">Actif</Badge>
                   </div>
                   <div className="mt-4 space-y-1">
-                    <div className="font-medium">Numero de l&apos;app ZakBot</div>
+                    <div className="font-medium">Numero de l&apos;app Rasil</div>
                     <div className="text-sm text-muted-foreground">
-                      Utilisez le numero gere par ZakBot pour envoyer les messages clients des maintenant.
+                      Utilisez le numero gere par Rasil pour envoyer les messages clients des maintenant.
                     </div>
                   </div>
                   <div className="mt-4 rounded-2xl border border-border/70 bg-card/80 p-3">
@@ -401,7 +401,7 @@ export function IntegrationsPanel({ businessId }: { businessId: number }) {
           </div>
 
           <div className="rounded-2xl border border-primary/15 bg-primary/8 p-4 text-sm text-muted-foreground">
-            ZakBot reste l&apos;expediteur visible pour cette premiere phase. Quand les numeros
+            Rasil reste l&apos;expediteur visible pour cette premiere phase. Quand les numeros
             personnalises seront disponibles, cette page gardera exactement les deux choix de
             routage deja affiches ici.
           </div>
@@ -439,8 +439,8 @@ export function IntegrationsPanel({ businessId }: { businessId: number }) {
                     </div>
                     <p className="text-sm text-muted-foreground">
                       {shopify.status === "connected"
-                        ? "Shopify orders are linked to ZakBot confirmation sessions"
-                        : "Connect your Shopify store to trigger WhatsApp order confirmation automatically"}
+                        ? "Les commandes Shopify alimentent automatiquement les sessions de confirmation Rasil"
+                        : "Connectez votre boutique Shopify pour declencher automatiquement les confirmations WhatsApp"}
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -511,7 +511,7 @@ export function IntegrationsPanel({ businessId }: { businessId: number }) {
                     <div className="flex flex-wrap gap-3">
                       <Button type="button" onClick={handleOpenShopifyDialog}>
                         <RefreshCw className="h-4 w-4" />
-                        Reconnect Shopify
+                        Reconnecter Shopify
                       </Button>
                       <Button
                         type="button"
@@ -524,19 +524,19 @@ export function IntegrationsPanel({ businessId }: { businessId: number }) {
                         ) : (
                           <ExternalLink className="h-4 w-4" />
                         )}
-                        Refresh status
+                        Actualiser le statut
                       </Button>
                     </div>
 
                     <div className="rounded-2xl border border-primary/15 bg-primary/8 p-4 text-sm text-muted-foreground">
-                      New Shopify orders will flow into ZakBot order confirmations automatically.
+                      Les nouvelles commandes Shopify alimenteront automatiquement les confirmations de commande Rasil.
                     </div>
                   </>
                 ) : (
                   <>
                     <div className="rounded-2xl border border-border/70 bg-background/60 p-4 text-sm text-muted-foreground">
-                      Connect Shopify depuis cette page pour lancer l&apos;installation OAuth,
-                      revenir automatiquement dans ZakBot et voir l&apos;etat reel de la connexion sans
+                      Connectez Shopify depuis cette page pour lancer l&apos;installation OAuth,
+                      revenir automatiquement dans Rasil et voir l&apos;etat reel de la connexion sans
                       recharger manuellement.
                     </div>
                     <div className="flex flex-wrap gap-3">
@@ -550,7 +550,7 @@ export function IntegrationsPanel({ businessId }: { businessId: number }) {
                         ) : (
                           <Store className="h-4 w-4" />
                         )}
-                        Connect Shopify
+                        Connecter Shopify
                       </Button>
                       <Button
                         type="button"
@@ -559,7 +559,7 @@ export function IntegrationsPanel({ businessId }: { businessId: number }) {
                         disabled={integrationsQuery.isFetching}
                       >
                         <RefreshCw className="h-4 w-4" />
-                        Refresh
+                        Actualiser
                       </Button>
                     </div>
                     {shopifyConnectDisabledReason ? (
@@ -580,7 +580,7 @@ export function IntegrationsPanel({ businessId }: { businessId: number }) {
                     <div className="font-medium">{platform.name}</div>
                     <p className="text-sm text-muted-foreground">{platform.description}</p>
                   </div>
-                  <Badge variant="secondary">Soon</Badge>
+                  <Badge variant="secondary">Bientot</Badge>
                 </div>
                 <div className="rounded-2xl border border-border/70 bg-background/60 p-3 text-sm text-muted-foreground">
                   Cette integration est prevue dans la roadmap, mais elle n&apos;est pas encore
@@ -606,7 +606,7 @@ export function IntegrationsPanel({ businessId }: { businessId: number }) {
               <CardContent className="space-y-3 p-5">
                 <div className="flex items-center justify-between gap-3">
                   <div className="font-medium">{item.name}</div>
-                  <Badge variant="secondary">Soon</Badge>
+                  <Badge variant="secondary">Bientot</Badge>
                 </div>
                 <div className="text-sm text-muted-foreground">{item.description}</div>
                 <Button variant="ghost" className="h-auto px-0 text-primary" disabled>
@@ -621,16 +621,16 @@ export function IntegrationsPanel({ businessId }: { businessId: number }) {
       <Dialog open={shopifyDialogOpen} onOpenChange={setShopifyDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Connect Shopify</DialogTitle>
+            <DialogTitle>Connecter Shopify</DialogTitle>
             <DialogDescription>
-              Saisissez votre domaine Shopify. ZakBot ouvrira ensuite la fenetre
+              Saisissez votre domaine Shopify. Rasil ouvrira ensuite la fenetre
               d&apos;installation Shopify et reviendra ici des que la connexion sera terminee.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
               <label htmlFor="shopify-shop-domain" className="text-sm font-medium">
-                Shopify shop domain
+                Domaine Shopify
               </label>
               <Input
                 id="shopify-shop-domain"

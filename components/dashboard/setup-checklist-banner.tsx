@@ -19,7 +19,7 @@ export function SetupChecklistBanner({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="text-sm font-medium text-primary">
-              Configuration de ZakBot
+              Configuration de Rasil
             </div>
             <div className="mt-1 text-sm text-muted-foreground">
               {checklist.completed_count} / {checklist.total} etapes completees

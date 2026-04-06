@@ -180,7 +180,7 @@ export function BusinessProfileForm({ businessId }: { businessId: number }) {
       <PageHeader
         eyebrow="Profil de la boutique"
         title="Coachez votre assistant comme un membre de l'equipe"
-        description="Ces informations aident ZakBot a repondre avec le bon ton, les bonnes politiques et les bons details produits."
+        description="Ces informations aident Rasil a repondre avec le bon ton, les bonnes politiques et les bons details produits."
         trailing={
           <div className="rounded-3xl border border-primary/20 bg-primary/8 px-4 py-3 text-sm text-primary">
             <div className="flex items-center gap-2 font-medium">

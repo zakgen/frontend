@@ -1,6 +1,6 @@
-# ZakBot Frontend Dashboard
+# Rasil Frontend Dashboard
 
-Frontend V0 demo pour ZakBot, l'assistant WhatsApp de vente pour boutiques e-commerce marocaines.
+Frontend V0 demo pour Rasil, la surface operations pour boutiques e-commerce marocaines.
 
 ## Ce qui est implemente
 

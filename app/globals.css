@@ -3,58 +3,61 @@
 @tailwind utilities;
 
 :root {
-  --background: 40 20% 96%;
-  --foreground: 20 12% 10%;
-  --muted: 38 17% 92%;
-  --muted-foreground: 24 8% 42%;
+  --font-sans: "Aptos", "Inter", "Segoe UI", "Helvetica Neue", sans-serif;
+  --font-display: "Aptos", "Inter", "Segoe UI", "Helvetica Neue", sans-serif;
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", "Menlo", monospace;
+  --background: 210 24% 97%;
+  --foreground: 208 28% 21%;
+  --muted: 210 18% 94%;
+  --muted-foreground: 210 10% 42%;
   --popover: 0 0% 100%;
-  --popover-foreground: 20 12% 10%;
+  --popover-foreground: 208 28% 21%;
   --card: 0 0% 100%;
-  --card-foreground: 20 12% 10%;
-  --border: 32 13% 84%;
-  --input: 32 13% 84%;
-  --primary: 148 69% 32%;
-  --primary-foreground: 42 60% 98%;
-  --secondary: 36 15% 92%;
-  --secondary-foreground: 20 12% 10%;
-  --accent: 146 34% 92%;
-  --accent-foreground: 148 69% 21%;
+  --card-foreground: 208 28% 21%;
+  --border: 210 18% 85%;
+  --input: 210 18% 85%;
+  --primary: 208 29% 24%;
+  --primary-foreground: 210 20% 98%;
+  --secondary: 210 20% 95%;
+  --secondary-foreground: 208 28% 21%;
+  --accent: 145 23% 61%;
+  --accent-foreground: 208 28% 21%;
   --destructive: 3 72% 50%;
   --destructive-foreground: 0 0% 98%;
-  --ring: 148 69% 32%;
-  --radius: 0.75rem;
-  --chart-1: 148 69% 32%;
-  --chart-2: 35 80% 56%;
-  --chart-3: 196 45% 42%;
-  --chart-4: 338 66% 55%;
-  --chart-5: 259 40% 52%;
+  --ring: 208 29% 24%;
+  --radius: 0.9rem;
+  --chart-1: 208 29% 24%;
+  --chart-2: 145 23% 61%;
+  --chart-3: 201 30% 48%;
+  --chart-4: 41 63% 58%;
+  --chart-5: 222 18% 56%;
 }
 
 .dark {
-  --background: 216 42% 10%;
-  --foreground: 40 20% 95%;
-  --muted: 214 32% 16%;
-  --muted-foreground: 212 15% 72%;
-  --popover: 216 41% 12%;
-  --popover-foreground: 40 20% 95%;
-  --card: 215 35% 14%;
-  --card-foreground: 40 20% 95%;
-  --border: 217 23% 22%;
-  --input: 217 23% 22%;
-  --primary: 152 43% 47%;
-  --primary-foreground: 155 100% 6%;
-  --secondary: 219 27% 18%;
-  --secondary-foreground: 40 20% 95%;
-  --accent: 197 31% 19%;
-  --accent-foreground: 189 54% 90%;
+  --background: 210 30% 10%;
+  --foreground: 210 24% 94%;
+  --muted: 211 24% 16%;
+  --muted-foreground: 210 12% 72%;
+  --popover: 210 28% 12%;
+  --popover-foreground: 210 24% 94%;
+  --card: 210 26% 14%;
+  --card-foreground: 210 24% 94%;
+  --border: 211 19% 22%;
+  --input: 211 19% 22%;
+  --primary: 145 20% 62%;
+  --primary-foreground: 210 30% 10%;
+  --secondary: 210 22% 18%;
+  --secondary-foreground: 210 24% 94%;
+  --accent: 208 29% 24%;
+  --accent-foreground: 210 24% 94%;
   --destructive: 3 81% 59%;
   --destructive-foreground: 0 0% 98%;
-  --ring: 152 43% 47%;
-  --chart-1: 152 43% 47%;
-  --chart-2: 35 80% 56%;
-  --chart-3: 196 56% 51%;
-  --chart-4: 338 70% 62%;
-  --chart-5: 262 72% 69%;
+  --ring: 145 20% 62%;
+  --chart-1: 145 20% 62%;
+  --chart-2: 208 29% 42%;
+  --chart-3: 199 39% 56%;
+  --chart-4: 38 70% 63%;
+  --chart-5: 222 18% 72%;
 }
 
 * {
@@ -68,16 +71,34 @@ html {
 body {
   @apply min-h-screen bg-background font-sans text-foreground antialiased;
   background-image:
-    radial-gradient(circle at top left, rgba(26, 140, 85, 0.12), transparent 32%),
-    radial-gradient(circle at top right, rgba(217, 119, 6, 0.08), transparent 28%),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0));
+    radial-gradient(circle at top right, rgba(122, 171, 141, 0.12), transparent 28%),
+    linear-gradient(145deg, rgba(41, 61, 79, 0.08), transparent 18%),
+    linear-gradient(90deg, rgba(41, 61, 79, 0.045) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(41, 61, 79, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.92), rgba(245, 247, 250, 0.98));
+  background-size:
+    auto,
+    auto,
+    36px 36px,
+    36px 36px,
+    auto;
+  background-attachment: fixed;
+  font-feature-settings: "rlig" 1, "calt" 1;
 }
 
 .dark body {
   background-image:
-    radial-gradient(circle at top left, rgba(16, 185, 129, 0.14), transparent 34%),
-    radial-gradient(circle at top right, rgba(14, 165, 233, 0.12), transparent 26%),
-    linear-gradient(to bottom, rgba(15, 23, 42, 0.44), rgba(15, 23, 42, 0));
+    radial-gradient(circle at top right, rgba(122, 171, 141, 0.12), transparent 26%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.04), transparent 20%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(14, 24, 33, 0.95), rgba(12, 18, 26, 0.98));
+  background-size:
+    auto,
+    auto,
+    36px 36px,
+    36px 36px,
+    auto;
 }
 
 ::selection {
@@ -92,5 +113,10 @@ body {
   .surface-grid {
     background-image: theme(backgroundImage.surface-grid);
     background-size: 32px 32px;
+  }
+
+  .surface-lines {
+    background-image: theme(backgroundImage.surface-lines);
+    background-size: auto, 34px 34px, 34px 34px;
   }
 }

@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import {
   CircleUserRound,
-  Bot,
   BriefcaseBusiness,
   Cable,
   ClipboardCheck,
@@ -17,6 +16,7 @@ import {
 
 import { ThemeToggle } from "@/components/dashboard/theme-toggle";
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { RasilLogo } from "@/components/brand/rasil-logo";
 import { Badge } from "@/components/ui/badge";
 import { getDashboardApi } from "@/lib/api";
 import { queryKeys } from "@/lib/api/query-keys";
@@ -28,11 +28,11 @@ const api = getDashboardApi();
 const navItems = [
   { href: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
   { href: "/dashboard/chats", label: "Chats", icon: MessageCircleMore },
-  { href: "/dashboard/order-confirmations", label: "Order Confirmations", icon: ClipboardCheck },
+  { href: "/dashboard/order-confirmations", label: "Confirmations de commande", icon: ClipboardCheck },
   { href: "/dashboard/products", label: "Produits", icon: Package2 },
   { href: "/dashboard/business", label: "Profil de la boutique", icon: BriefcaseBusiness },
   { href: "/dashboard/rag", label: "Connaissance IA", icon: Sparkles, status: "knowledge" as const },
-  { href: "/dashboard/integrations", label: "Integrations", icon: Cable, status: "integrations" as const },
+  { href: "/dashboard/integrations", label: "Connexions", icon: Cable, status: "integrations" as const },
 ];
 
 export function DashboardShell({
@@ -56,25 +56,38 @@ export function DashboardShell({
   return (
     <div className="min-h-screen">
       <div className="mx-auto grid min-h-screen max-w-[1440px] grid-cols-1 gap-6 p-4 lg:grid-cols-[240px_minmax(0,1fr)] lg:items-start lg:p-6">
-        <aside className="relative overflow-hidden rounded-[28px] border border-border/70 bg-card/90 p-5 shadow-soft backdrop-blur-sm lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)]">
-          <div className="absolute inset-0 surface-grid opacity-30" />
+        <aside className="relative overflow-hidden rounded-[30px] border border-border/80 bg-card/94 p-5 shadow-panel backdrop-blur-md lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)]">
+          <div className="absolute inset-0 surface-lines opacity-40" />
           <div className="relative flex h-full flex-col lg:max-h-[calc(100vh-5.5rem)] lg:overflow-y-auto lg:pr-1">
-            <div className="mb-8 flex items-center gap-3">
-              <div className="rounded-2xl bg-primary p-3 text-primary-foreground">
-                <Bot className="h-5 w-5" />
+            <div className="mb-8 space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="w-14 rounded-[22px] border border-border/70 bg-background/80 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
+                  <RasilLogo variant="icon" className="w-full" priority />
+                </div>
+                <div>
+                  <div className="font-display text-2xl font-semibold tracking-[-0.05em]">Rasil</div>
+                  <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                    Operations cockpit
+                  </div>
+                </div>
               </div>
-              <div>
-                <div className="font-display text-xl font-semibold tracking-tight">ZakBot</div>
-                <div className="text-sm text-muted-foreground">
-                  {businessQuery.data?.name ?? "Assistant WhatsApp pour votre boutique"}
+              <div className="rounded-[24px] border border-border/70 bg-background/82 p-4">
+                <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  Boutique active
+                </div>
+                <div className="mt-2 text-base font-semibold text-foreground">
+                  {businessQuery.data?.name ?? "Rasil"}
+                </div>
+                <div className="mt-1 text-sm text-muted-foreground">
+                  Order Clarity &amp; Operational Control
                 </div>
               </div>
             </div>
 
-            <div className="mb-8 rounded-3xl border border-border/60 bg-background/70 p-4">
-              <Badge className="mb-3 w-fit">Demo client</Badge>
+            <div className="mb-8 rounded-[26px] border border-primary/10 bg-primary/5 p-4">
+              <Badge className="mb-3 w-fit">Controle operationnel</Badge>
               <p className="text-sm text-muted-foreground">
-                Suivez vos conversations, votre catalogue et l&apos;etat de votre assistant au meme endroit.
+                Gardez vos conversations, votre catalogue et vos confirmations dans un seul espace clair.
               </p>
             </div>
 
@@ -94,7 +107,7 @@ export function DashboardShell({
                       "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition",
                       active
                         ? "bg-primary text-primary-foreground shadow-soft"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                        : "text-muted-foreground hover:bg-secondary/90 hover:text-foreground",
                     )}
                     >
                     <Icon className="h-4 w-4 shrink-0" />
@@ -143,7 +156,7 @@ export function DashboardShell({
               <div className="flex items-center justify-between rounded-3xl border border-border/60 bg-background/80 p-4">
                 <div>
                   <div className="text-sm font-medium">Apparence</div>
-                  <div className="text-xs text-muted-foreground">Mode clair prioritaire</div>
+                  <div className="text-xs text-muted-foreground">Theme clair prioritaire</div>
                 </div>
                 <ThemeToggle />
               </div>
@@ -151,7 +164,7 @@ export function DashboardShell({
           </div>
         </aside>
 
-        <main className="rounded-[28px] border border-border/60 bg-background/70 p-5 shadow-soft backdrop-blur-sm lg:p-8">
+        <main className="rounded-[30px] border border-border/75 bg-background/76 p-5 shadow-soft backdrop-blur-md lg:p-8">
           {children}
         </main>
       </div>

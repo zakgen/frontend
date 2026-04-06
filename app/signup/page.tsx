@@ -25,7 +25,7 @@ export default async function SignupPage({
     <AuthShell
       eyebrow="Creation de compte"
       title="Creez l'acces prive de votre boutique"
-      description="Commencez avec une connexion simple par email pour reserver le dashboard ZakBot a votre equipe."
+      description="Commencez avec une connexion simple par email pour reserver le cockpit Rasil a votre equipe."
     >
       <SignupForm nextPath={params.next} />
     </AuthShell>

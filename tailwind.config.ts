@@ -66,16 +66,19 @@ const config: Config = {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ['"Avenir Next"', '"Segoe UI"', '"Helvetica Neue"', "sans-serif"],
-        display: ['"Iowan Old Style"', '"Palatino Linotype"', '"Book Antiqua"', "serif"],
-        mono: ['"IBM Plex Mono"', '"SFMono-Regular"', '"Menlo"', "monospace"],
+        sans: ["var(--font-sans)"],
+        display: ["var(--font-display)"],
+        mono: ["var(--font-mono)"],
       },
       boxShadow: {
-        soft: "0 24px 80px rgba(15, 23, 42, 0.10)",
+        soft: "0 24px 60px rgba(41, 61, 79, 0.08)",
+        panel: "0 28px 80px rgba(28, 42, 54, 0.12)",
       },
       backgroundImage: {
         "surface-grid":
           "linear-gradient(to right, hsl(var(--border) / 0.22) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--border) / 0.22) 1px, transparent 1px)",
+        "surface-lines":
+          "linear-gradient(120deg, hsl(var(--primary) / 0.07), transparent 22%), linear-gradient(90deg, hsl(var(--border) / 0.18) 1px, transparent 1px), linear-gradient(180deg, hsl(var(--border) / 0.18) 1px, transparent 1px)",
       },
       keyframes: {
         "fade-up": {

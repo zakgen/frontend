@@ -332,7 +332,7 @@ export class MockDashboardApi implements DashboardApi {
 
   async sendWhatsAppTestMessage(businessId: number, prompt: string) {
     await delay(380);
-    return `Exemple de reponse ZakBot : Bonjour, oui nous livrons a Fes et le paiement a la livraison est disponible. Souhaitez-vous confirmer votre ville et le produit qui vous interesse ?`;
+    return `Exemple de reponse Rasil : Bonjour, oui nous livrons a Fes et le paiement a la livraison est disponible. Souhaitez-vous confirmer votre ville et le produit qui vous interesse ?`;
   }
 
   async createOrderConfirmation(
@@ -358,7 +358,7 @@ export class MockDashboardApi implements DashboardApi {
     status?: OrderConfirmationSessionStatus | "all",
   ): Promise<OrderConfirmationSessionListResponse> {
     throw new Error(
-      "La vue Order Confirmations necessite un backend reel. Configurez NEXT_PUBLIC_API_BASE_URL.",
+      "La vue Confirmations de commande necessite un backend reel. Configurez NEXT_PUBLIC_API_BASE_URL.",
     );
   }
 
