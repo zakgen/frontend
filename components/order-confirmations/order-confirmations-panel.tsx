@@ -191,6 +191,17 @@ function exportSessionJson(detail: OrderConfirmationSessionDetail) {
   );
 }
 
+function isOutside24hWindowPayload(payload: Record<string, unknown>) {
+  return (
+    payload.provider_status === "skipped_window" &&
+    payload.error_code === "outside_24h_window"
+  );
+}
+
+function findLatest24hWindowSkippedEvent(detail: OrderConfirmationSessionDetail) {
+  return [...detail.events].reverse().find((event) => isOutside24hWindowPayload(event.payload));
+}
+
 export function OrderConfirmationsPanel({ businessId }: { businessId: number }) {
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] =
@@ -252,7 +263,15 @@ export function OrderConfirmationsPanel({ businessId }: { businessId: number }) 
           queryKey: queryKeys.orderConfirmationSession(businessId, detail.id),
         }),
       ]);
-      toast.success("Session mise a jour.");
+      const skippedEvent = findLatest24hWindowSkippedEvent(detail);
+      if (skippedEvent && (pendingAction === "resend" || pendingAction === "confirm")) {
+        toast.warning("Not sent (outside 24h window)", {
+          description:
+            "Twilio a bloque l'envoi libre hors de la fenetre 24h. Le detail de session affiche cet etat.",
+        });
+      } else {
+        toast.success("Session mise a jour.");
+      }
       setActionDialogOpen(false);
       setPendingAction(null);
       setActionNote("");
@@ -568,6 +587,7 @@ function SessionDetail({
   onOpenAction: (action: OrderConfirmationAction) => void;
 }) {
   const order = detail.order;
+  const skippedWindowEvent = findLatest24hWindowSkippedEvent(detail);
 
   return (
     <ScrollArea className="h-[720px] pr-2">
@@ -590,6 +610,14 @@ function SessionDetail({
             <MiniInfo label="Refusee le" value={formatDateTime(detail.declined_at)} />
             <MiniInfo label="Mise a jour le" value={formatDateTime(detail.updated_at)} />
           </div>
+          {skippedWindowEvent ? (
+            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/8 p-4 text-sm text-amber-700">
+              <div className="font-medium">Not sent (outside 24h window)</div>
+              <div className="mt-1 text-amber-700/90">
+                Une tentative d&apos;envoi libre a ete ignoree par le fournisseur hors de la fenetre WhatsApp de 24h.
+              </div>
+            </div>
+          ) : null}
         </section>
 
         <Separator />
@@ -661,6 +689,11 @@ function SessionDetail({
                     </div>
                   </div>
                   <div className="mt-3 space-y-2">
+                    {isOutside24hWindowPayload(event.payload) ? (
+                      <div className="rounded-2xl border border-amber-500/20 bg-amber-500/8 p-3 text-sm text-amber-700">
+                        Not sent (outside 24h window)
+                      </div>
+                    ) : null}
                     {Object.keys(event.payload).length ? (
                       Object.entries(event.payload).map(([key, value]) => (
                         <div

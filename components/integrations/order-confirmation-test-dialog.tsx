@@ -98,6 +98,14 @@ function getErrorMessage(error: Error) {
   return getSafeWhatsAppReadinessMessage(error.message);
 }
 
+function has24hWindowSkippedEvent(session: OrderConfirmationSessionDetail) {
+  return session.events.some(
+    (event) =>
+      event.payload.provider_status === "skipped_window" &&
+      event.payload.error_code === "outside_24h_window",
+  );
+}
+
 export function OrderConfirmationTestDialog({
   businessId,
   open,
@@ -173,6 +181,7 @@ export function OrderConfirmationTestDialog({
 
   const submitDisabled =
     createMutation.isPending || !businessId || !whatsappConnected || Boolean(disabledReason);
+  const skippedOutsideWindow = sessionDetail ? has24hWindowSkippedEvent(sessionDetail) : false;
 
   return (
     <Dialog
@@ -354,8 +363,20 @@ export function OrderConfirmationTestDialog({
                   <ResultCard label="Statut session" value={sessionDetail.status} />
                   <ResultCard
                     label="Message envoye"
-                    value={lastResult.confirmation_message_sent ? "true" : "false"}
-                    tone={lastResult.confirmation_message_sent ? "success" : "warning"}
+                    value={
+                      skippedOutsideWindow
+                        ? "Not sent (outside 24h window)"
+                        : lastResult.confirmation_message_sent
+                          ? "true"
+                          : "false"
+                    }
+                    tone={
+                      skippedOutsideWindow
+                        ? "warning"
+                        : lastResult.confirmation_message_sent
+                          ? "success"
+                          : "warning"
+                    }
                   />
                   <ResultCard label="Telephone client" value={sessionDetail.phone} />
                   <ResultCard
@@ -382,6 +403,12 @@ export function OrderConfirmationTestDialog({
                               {formatDateTime(event.created_at)}
                             </div>
                           </div>
+                          {event.payload.provider_status === "skipped_window" &&
+                          event.payload.error_code === "outside_24h_window" ? (
+                            <div className="mt-3 rounded-2xl border border-amber-500/20 bg-amber-500/8 p-3 text-sm text-amber-700">
+                              Not sent (outside 24h window)
+                            </div>
+                          ) : null}
                           <Textarea
                             readOnly
                             value={JSON.stringify(event.payload, null, 2)}

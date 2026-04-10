@@ -129,6 +129,8 @@ export type ConversationMessage = {
   timestamp: string;
   intent?: ConversationIntent | null;
   needs_human?: boolean;
+  provider_status?: string | null;
+  error_code?: string | null;
 };
 
 export type ConversationSummary = {

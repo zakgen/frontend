@@ -21,7 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { getDashboardApi } from "@/lib/api";
 import { queryKeys } from "@/lib/api/query-keys";
 import { getDateGroupLabel, getIntentMeta, formatDateTime, formatRelativeTime, maskPhoneNumber } from "@/lib/utils";
-import type { ConversationIntent, ConversationSummary } from "@/lib/types";
+import type { ConversationIntent, ConversationMessage, ConversationSummary } from "@/lib/types";
 
 const api = getDashboardApi();
 
@@ -32,6 +32,14 @@ function groupByDate(conversations: ConversationSummary[]) {
     acc[label].push(conversation);
     return acc;
   }, {});
+}
+
+function isOutsideWindowSkippedMessage(message: ConversationMessage) {
+  return (
+    message.direction === "outbound" &&
+    message.provider_status === "skipped_window" &&
+    message.error_code === "outside_24h_window"
+  );
 }
 
 export function ChatInbox({ businessId }: { businessId: number }) {
@@ -334,6 +342,7 @@ export function ChatInbox({ businessId }: { businessId: number }) {
 
                         {threadQuery.data.messages.map((message) => {
                           const inbound = message.direction === "inbound";
+                          const skippedOutsideWindow = isOutsideWindowSkippedMessage(message);
                           return (
                             <div
                               key={message.id}
@@ -358,10 +367,24 @@ export function ChatInbox({ businessId }: { businessId: number }) {
                                   {message.needs_human ? (
                                     <Badge variant="warning">Relais humain</Badge>
                                   ) : null}
+                                  {skippedOutsideWindow ? (
+                                    <Badge variant="warning">Non envoye</Badge>
+                                  ) : null}
                                 </div>
                                 <p className={`text-sm leading-6 ${inbound ? "text-foreground" : ""}`}>
                                   {message.text}
                                 </p>
+                                {skippedOutsideWindow ? (
+                                  <div
+                                    className={`mt-3 rounded-2xl border border-amber-500/25 px-3 py-2 text-xs ${
+                                      inbound
+                                        ? "bg-amber-500/10 text-amber-700"
+                                        : "bg-black/10 text-primary-foreground"
+                                    }`}
+                                  >
+                                    Not sent (outside 24h window)
+                                  </div>
+                                ) : null}
                                 <div
                                   className={`mt-3 text-xs ${
                                     inbound ? "text-muted-foreground" : "text-primary-foreground/80"

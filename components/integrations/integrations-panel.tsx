@@ -37,6 +37,45 @@ import { formatDateTime, formatRelativeTime } from "@/lib/utils";
 const api = getDashboardApi();
 const SHOPIFY_POLL_INTERVAL_MS = 3_000;
 const SHOPIFY_POLL_TIMEOUT_MS = 60_000;
+const whatsappDefaultTemplates = {
+  french: {
+    label: "Template FR par defaut",
+    direction: "ltr" as const,
+    lines: [
+      "Bonjour Nom client,",
+      "🙂 Merci pour votre commande chez Nom boutique (ex: Rasil).",
+      "Voici les détails de votre commande : Produit(s) (ex: Jacket x1)",
+      "🏠 Adresse : Adresse",
+      "🏙️ Ville : Ville",
+      "💰 Montant total : Prix (ex: 399 MAD)",
+      "Merci de confirmer votre commande afin que nous puissions la traiter.",
+    ],
+    actions: [
+      "↩️ Confirmer Commande",
+      "↩️ Modifier la commande",
+      "↩️ Annuler la commande",
+    ],
+  },
+  arabic: {
+    label: "Template AR par defaut",
+    direction: "rtl" as const,
+    lines: [
+      "السلام عليكم Zakaria Imzilen",
+      "🙂 نشكرك على الطلب ديالك معنا من Rasil",
+      "ها التفاصيل ديال الطلب ديالك:",
+      "Jacket x 1",
+      "🏠 العنوان: Youssoufia",
+      "🏙️ المدينة: Rabat",
+      "💰 الثمن الإجمالي: 399 درهم",
+      "عفاك أكد لينا الطلب ديالك باش نبداو الخدمة",
+    ],
+    actions: [
+      "↩️ تأكيد الطلب",
+      "↩️ تعديل الطلب",
+      "↩️ إلغاء الطلب",
+    ],
+  },
+};
 
 function normalizeShopDomain(
   value: string,
@@ -89,6 +128,48 @@ function formatWebhookLabel(webhookStatus: string | null | undefined) {
     .filter(Boolean)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
+}
+
+function WhatsAppTemplatePreview({
+  label,
+  direction,
+  lines,
+  actions,
+}: {
+  label: string;
+  direction: "ltr" | "rtl";
+  lines: string[];
+  actions: string[];
+}) {
+  return (
+    <div className="rounded-[28px] border border-border/70 bg-card/80 p-4 shadow-sm">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="text-sm font-medium">{label}</div>
+        <Badge variant="secondary">Template actif</Badge>
+      </div>
+      <div className="overflow-hidden rounded-[24px] border border-border/70 bg-background">
+        <div className="space-y-3 px-4 py-4 text-sm leading-6" dir={direction}>
+          {lines.map((line, index) => (
+            <p key={`${label}-${index}`} className="whitespace-pre-wrap text-foreground">
+              {line}
+            </p>
+          ))}
+          <div className="pt-2 text-right text-xs text-muted-foreground">12:35 PM</div>
+        </div>
+        <div className="border-t border-border/70">
+          {actions.map((action) => (
+            <div
+              key={`${label}-${action}`}
+              className="border-t border-border/70 px-4 py-3 text-center text-sm font-medium text-sky-600 first:border-t-0"
+              dir={direction}
+            >
+              {action}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export function IntegrationsPanel({ businessId }: { businessId: number }) {
@@ -374,6 +455,21 @@ export function IntegrationsPanel({ businessId }: { businessId: number }) {
                 <div className="text-sm text-muted-foreground">Derniere activite</div>
                 <div className="mt-2 font-medium">{formatDateTime(whatsapp.last_activity_at)}</div>
               </div>
+            </div>
+          </div>
+
+          <div className="rounded-[28px] border border-border/70 bg-background/70 p-5">
+            <div className="mb-4 space-y-1">
+              <div className="text-sm font-medium">Templates WhatsApp actuellement utilises</div>
+              <div className="text-sm text-muted-foreground">
+                Pour le premier envoi, Rasil utilise pour le moment les templates par defaut
+                valides cote fournisseur. Le contenu ci-dessous correspond au message visible
+                aujourd&apos;hui pour la confirmation initiale.
+              </div>
+            </div>
+            <div className="grid gap-4 xl:grid-cols-2">
+              <WhatsAppTemplatePreview {...whatsappDefaultTemplates.french} />
+              <WhatsAppTemplatePreview {...whatsappDefaultTemplates.arabic} />
             </div>
           </div>
 
