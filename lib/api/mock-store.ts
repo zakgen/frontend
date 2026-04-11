@@ -153,6 +153,11 @@ export function buildConversationSummaries(
         needs_human: ordered.some((message) => message.needs_human),
         inbound_count: ordered.filter((message) => message.direction === "inbound").length,
         outbound_count: ordered.filter((message) => message.direction === "outbound").length,
+        message_context: last?.message_context ?? null,
+        order_window_status: last?.order_window_status ?? null,
+        order_session_id: last?.order_session_id ?? null,
+        order_id: last?.order_id ?? null,
+        order_external_id: last?.order_external_id ?? null,
       };
     })
     .sort((a, b) => b.last_timestamp.localeCompare(a.last_timestamp));

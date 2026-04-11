@@ -204,7 +204,13 @@ function findLatest24hWindowSkippedEvent(detail: OrderConfirmationSessionDetail)
   return [...detail.events].reverse().find((event) => isOutside24hWindowPayload(event.payload));
 }
 
-export function OrderConfirmationsPanel({ businessId }: { businessId: number }) {
+export function OrderConfirmationsPanel({
+  businessId,
+  initialSessionId,
+}: {
+  businessId: number;
+  initialSessionId?: string;
+}) {
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] =
     useState<OrderConfirmationSessionStatus | "all">("all");
@@ -226,6 +232,15 @@ export function OrderConfirmationsPanel({ businessId }: { businessId: number }) 
   );
 
   useEffect(() => {
+    if (
+      initialSessionId &&
+      filteredSessions.some((session) => session.id === initialSessionId) &&
+      selectedSessionId !== initialSessionId
+    ) {
+      setSelectedSessionId(initialSessionId);
+      return;
+    }
+
     if (!selectedSessionId && filteredSessions.length) {
       setSelectedSessionId(filteredSessions[0].id);
       return;
@@ -238,7 +253,7 @@ export function OrderConfirmationsPanel({ businessId }: { businessId: number }) 
     ) {
       setSelectedSessionId(filteredSessions[0].id);
     }
-  }, [filteredSessions, selectedSessionId]);
+  }, [filteredSessions, selectedSessionId, initialSessionId]);
 
   const detailQuery = useQuery({
     queryKey: queryKeys.orderConfirmationSession(businessId, selectedSessionId),

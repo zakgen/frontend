@@ -205,6 +205,9 @@ export class MockDashboardApi implements DashboardApi {
   ): Promise<ConversationMessage> {
     await delay(260);
     const state = readDemoState();
+    const latestMessage = state.messages
+      .filter((item) => item.phone === phone)
+      .sort((a, b) => b.timestamp.localeCompare(a.timestamp))[0];
     const message: ConversationMessage = {
       id: `msg-${Math.random().toString(36).slice(2, 10)}`,
       phone,
@@ -213,6 +216,11 @@ export class MockDashboardApi implements DashboardApi {
       timestamp: new Date().toISOString(),
       intent: input.intent ?? null,
       needs_human: input.needs_human ?? false,
+      message_context: latestMessage?.message_context ?? "general",
+      order_window_status: latestMessage?.order_window_status ?? null,
+      order_session_id: latestMessage?.order_session_id ?? null,
+      order_id: latestMessage?.order_id ?? null,
+      order_external_id: latestMessage?.order_external_id ?? null,
     };
     state.messages.push(message);
     state.whatsapp.last_activity_at = message.timestamp;

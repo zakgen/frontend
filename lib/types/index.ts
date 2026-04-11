@@ -11,6 +11,8 @@ export type ConversationIntent =
   | "paiement"
   | "infos_produit"
   | "autre";
+export type MessageContext = "order_confirmation" | "general";
+export type OrderWindowStatus = "ongoing" | "closed";
 export type PaymentMethod =
   | "cash_on_delivery"
   | "card_payment"
@@ -130,6 +132,11 @@ export type ConversationMessage = {
   timestamp: string;
   intent?: ConversationIntent | null;
   needs_human?: boolean;
+  message_context?: MessageContext | null;
+  order_window_status?: OrderWindowStatus | null;
+  order_session_id?: string | null;
+  order_id?: string | null;
+  order_external_id?: string | null;
   provider_status?: string | null;
   error_code?: string | null;
 };
@@ -144,6 +151,11 @@ export type ConversationSummary = {
   needs_human: boolean;
   inbound_count: number;
   outbound_count: number;
+  message_context?: MessageContext | null;
+  order_window_status?: OrderWindowStatus | null;
+  order_session_id?: string | null;
+  order_id?: string | null;
+  order_external_id?: string | null;
 };
 
 export type ConversationThread = {

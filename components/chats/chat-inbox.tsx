@@ -33,25 +33,15 @@ import { getDateGroupLabel, getIntentMeta, formatDateTime, formatRelativeTime, m
 import type { ConversationIntent, ConversationMessage, ConversationSummary } from "@/lib/types";
 
 const api = getDashboardApi();
-const orderConfirmationKeywords = [
-  "confirmer votre commande",
-  "confirmation de commande",
-  "modifier la commande",
-  "annuler la commande",
-  "confirmer la commande",
-  "confirmer commande",
-  "confirmation",
-  "commande",
-  "order confirmation",
-  "confirm order",
-  "تأكيد الطلب",
-  "تعديل الطلب",
-  "الغاء الطلب",
-  "إلغاء الطلب",
-];
 
 type ChatScope = "all" | "order_confirmations" | "ai_assistant";
-type ChatFlowType = "order_confirmation" | "ai_assistant" | "mixed";
+type ChatContext = {
+  message_context?: ConversationSummary["message_context"] | ConversationMessage["message_context"] | null;
+  order_window_status?: ConversationSummary["order_window_status"] | ConversationMessage["order_window_status"] | null;
+  order_session_id?: string | null;
+  order_id?: string | null;
+  order_external_id?: string | null;
+};
 
 function groupByDate(conversations: ConversationSummary[]) {
   return conversations.reduce<Record<string, ConversationSummary[]>>((acc, conversation) => {
@@ -80,69 +70,41 @@ function normalizeScope(value?: string | null): ChatScope {
   return "all";
 }
 
-function containsOrderConfirmationPattern(value?: string | null) {
-  const normalized = value?.toLowerCase() ?? "";
-  return orderConfirmationKeywords.some((keyword) => normalized.includes(keyword));
-}
-
-function classifyChatSummary(chat: ConversationSummary): ChatFlowType {
-  const looksLikeConfirmation = containsOrderConfirmationPattern(chat.last_message);
-  const looksLikeAssistant = chat.intents.length > 0 || chat.needs_human;
-
-  if (looksLikeConfirmation && looksLikeAssistant) return "mixed";
-  if (looksLikeConfirmation) return "order_confirmation";
-  return "ai_assistant";
-}
-
-function classifyThreadFlow(
-  messages: ConversationMessage[],
-  forcedOrderConfirmation: boolean,
-): ChatFlowType {
-  const looksLikeConfirmation =
-    forcedOrderConfirmation ||
-    messages.some((message) => containsOrderConfirmationPattern(message.text));
-  const looksLikeAssistant = messages.some(
-    (message) => Boolean(message.intent) || Boolean(message.needs_human),
-  );
-
-  if (looksLikeConfirmation && looksLikeAssistant) return "mixed";
-  if (looksLikeConfirmation) return "order_confirmation";
-  return "ai_assistant";
-}
-
-function matchesScope(flow: ChatFlowType, scope: ChatScope) {
+function matchesScope(chat: ConversationSummary, scope: ChatScope) {
   if (scope === "all") return true;
   if (scope === "order_confirmations") {
-    return flow === "order_confirmation" || flow === "mixed";
+    return chat.message_context === "order_confirmation";
   }
-  return flow === "ai_assistant" || flow === "mixed";
+  return chat.message_context !== "order_confirmation";
 }
 
-function getFlowMeta(flow: ChatFlowType) {
-  switch (flow) {
-    case "order_confirmation":
-      return {
-        label: "Order confirmation",
-        variant: "warning" as const,
-        helper:
-          "This conversation is part of an order confirmation flow.",
-      };
-    case "mixed":
-      return {
-        label: "Mixed",
-        variant: "secondary" as const,
-        helper:
-          "This conversation mixes order confirmation activity with inbound assistant questions.",
-      };
-    case "ai_assistant":
-    default:
-      return {
-        label: "AI assistant",
-        variant: "outline" as const,
-        helper:
-          "This conversation is handled as an inbound assistant chat.",
-      };
+function getFlowMeta(context: ChatContext) {
+  if (context.message_context === "order_confirmation") {
+    return {
+      label: "Order confirmation",
+      variant:
+        context.order_window_status === "closed"
+          ? ("secondary" as const)
+          : ("warning" as const),
+      windowLabel:
+        context.order_window_status === "ongoing"
+          ? "Window ongoing"
+          : context.order_window_status === "closed"
+            ? "Window closed"
+            : null,
+      helper:
+        context.order_window_status === "closed"
+          ? "This conversation is linked to the latest order-confirmation flow, but the order window is now closed."
+          : "This conversation belongs to the latest order-confirmation flow and order actions are still available.",
+    };
   }
+
+  return {
+    label: "AI assistant",
+    variant: "outline" as const,
+    windowLabel: null,
+    helper: "This conversation is handled as an inbound assistant chat.",
+  };
 }
 
 export function ChatInbox({
@@ -186,7 +148,7 @@ export function ChatInbox({
     () =>
       (chatsQuery.data ?? []).filter((chat) =>
         (initialPhone && chat.phone === initialPhone) ||
-        matchesScope(classifyChatSummary(chat), scope),
+        matchesScope(chat, scope),
       ),
     [chatsQuery.data, scope, initialPhone],
   );
@@ -228,20 +190,40 @@ export function ChatInbox({
     () => scopedChats.find((chat) => chat.phone === selectedPhone) ?? null,
     [scopedChats, selectedPhone],
   );
-  const summaryFlow = selectedSummary ? classifyChatSummary(selectedSummary) : "ai_assistant";
-  const threadFlow = useMemo(() => {
-    if (!threadQuery.data?.messages.length) {
-      return initialScope === "order-confirmations" || initialScope === "order_confirmations"
+  const latestThreadContextMessage = useMemo(() => {
+    const messages = threadQuery.data?.messages ?? [];
+    return [...messages]
+      .reverse()
+      .find((message) => message.message_context != null || message.order_window_status != null);
+  }, [threadQuery.data?.messages]);
+  const threadContext: ChatContext = {
+    message_context:
+      selectedSummary?.message_context ??
+      latestThreadContextMessage?.message_context ??
+      ((initialScope === "order-confirmations" || initialScope === "order_confirmations") &&
+      selectedPhone === initialPhone
         ? "order_confirmation"
-        : summaryFlow;
-    }
-    return classifyThreadFlow(
-      threadQuery.data.messages,
-      (initialScope === "order-confirmations" || initialScope === "order_confirmations") &&
-        selectedPhone === initialPhone,
-    );
-  }, [threadQuery.data?.messages, initialScope, selectedPhone, initialPhone, summaryFlow]);
-  const threadFlowMeta = getFlowMeta(threadFlow);
+        : "general"),
+    order_window_status:
+      selectedSummary?.order_window_status ??
+      latestThreadContextMessage?.order_window_status ??
+      null,
+    order_session_id:
+      selectedSummary?.order_session_id ?? latestThreadContextMessage?.order_session_id ?? null,
+    order_id: selectedSummary?.order_id ?? latestThreadContextMessage?.order_id ?? null,
+    order_external_id:
+      selectedSummary?.order_external_id ?? latestThreadContextMessage?.order_external_id ?? null,
+  };
+  const threadFlowMeta = getFlowMeta(threadContext);
+  const hasActiveOrderWindow =
+    threadContext.message_context === "order_confirmation" &&
+    threadContext.order_window_status === "ongoing";
+  const hasClosedOrderWindow =
+    threadContext.message_context === "order_confirmation" &&
+    threadContext.order_window_status === "closed";
+  const orderConfirmationHref = threadContext.order_session_id
+    ? `${getBusinessHref(businessId, "/order-confirmations")}?sessionId=${encodeURIComponent(threadContext.order_session_id)}`
+    : getBusinessHref(businessId, "/order-confirmations");
 
   useEffect(() => {
     if (!threadQuery.data?.messages.length) return;
@@ -385,7 +367,7 @@ export function ChatInbox({
                         </div>
                         <div className="space-y-2">
                           {items.map((chat) => {
-                            const flowMeta = getFlowMeta(classifyChatSummary(chat));
+                            const flowMeta = getFlowMeta(chat);
                             return (
                             <button
                               key={chat.phone}
@@ -415,6 +397,9 @@ export function ChatInbox({
                               <p className="line-clamp-2 text-sm text-muted-foreground">{chat.last_message}</p>
                               <div className="mt-3 flex flex-wrap gap-2">
                                 <Badge variant={flowMeta.variant}>{flowMeta.label}</Badge>
+                                {flowMeta.windowLabel ? (
+                                  <Badge variant="outline">{flowMeta.windowLabel}</Badge>
+                                ) : null}
                                 {chat.intents.slice(0, 2).map((item) => (
                                   <Badge key={item} variant={getIntentMeta(item).variant}>
                                     {getIntentMeta(item).label}
@@ -500,20 +485,35 @@ export function ChatInbox({
                         <div className="space-y-2">
                           <div className="flex flex-wrap items-center gap-2">
                             <Badge variant={threadFlowMeta.variant}>{threadFlowMeta.label}</Badge>
+                            {threadFlowMeta.windowLabel ? (
+                              <Badge variant="outline">{threadFlowMeta.windowLabel}</Badge>
+                            ) : null}
                             {selectedSummary?.needs_human ? (
                               <Badge variant="warning">Relais humain</Badge>
                             ) : null}
                           </div>
                           <p className="text-sm text-muted-foreground">{threadFlowMeta.helper}</p>
-                          <div className="text-xs text-muted-foreground">
-                            New orders go through Order Confirmations. Inbound questions and follow-ups are handled in Chats.
-                          </div>
+                          {threadContext.message_context === "order_confirmation" ? (
+                            <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                              {threadContext.order_session_id ? (
+                                <span>Session: {threadContext.order_session_id}</span>
+                              ) : null}
+                              {threadContext.order_id ? <span>Order: {threadContext.order_id}</span> : null}
+                              {threadContext.order_external_id ? (
+                                <span>External: {threadContext.order_external_id}</span>
+                              ) : null}
+                            </div>
+                          ) : (
+                            <div className="text-xs text-muted-foreground">
+                              New orders go through Order Confirmations. Inbound questions and follow-ups are handled in Chats.
+                            </div>
+                          )}
                         </div>
-                        {threadFlow !== "ai_assistant" ? (
+                        {threadContext.message_context === "order_confirmation" ? (
                           <Button asChild variant="outline" size="sm">
-                            <Link href={getBusinessHref(businessId, "/order-confirmations")}>
+                            <Link href={orderConfirmationHref}>
                               <ClipboardCheck className="h-4 w-4" />
-                              Open Order Confirmations
+                              {hasActiveOrderWindow ? "Open order actions" : "Open order context"}
                             </Link>
                           </Button>
                         ) : null}
@@ -530,8 +530,7 @@ export function ChatInbox({
                         {threadQuery.data.messages.map((message) => {
                           const inbound = message.direction === "inbound";
                           const skippedOutsideWindow = isOutsideWindowSkippedMessage(message);
-                          const isAutomationMessage =
-                            !inbound && containsOrderConfirmationPattern(message.text);
+                          const messageFlowMeta = getFlowMeta(message);
                           return (
                             <div
                               key={message.id}
@@ -548,10 +547,9 @@ export function ChatInbox({
                                   <Badge variant={inbound ? "outline" : "secondary"}>
                                     {inbound ? "Entrant" : "Sortant"}
                                   </Badge>
-                                  {!inbound ? (
-                                    <Badge variant={isAutomationMessage ? "warning" : "secondary"}>
-                                      {isAutomationMessage ? "Auto order confirmation" : "Operator reply"}
-                                    </Badge>
+                                  <Badge variant={messageFlowMeta.variant}>{messageFlowMeta.label}</Badge>
+                                  {messageFlowMeta.windowLabel ? (
+                                    <Badge variant="outline">{messageFlowMeta.windowLabel}</Badge>
                                   ) : null}
                                   {message.intent ? (
                                     <Badge variant={getIntentMeta(message.intent).variant}>
@@ -595,9 +593,25 @@ export function ChatInbox({
                     </ScrollArea>
                     <div className="border-t border-border/70 bg-background/90 p-4">
                       <div className="space-y-3 rounded-3xl border border-border/70 bg-card/70 p-4 shadow-sm">
-                        {threadFlow !== "ai_assistant" ? (
+                        {hasActiveOrderWindow ? (
                           <div className="rounded-2xl border border-amber-500/20 bg-amber-500/8 px-3 py-2 text-xs text-amber-700">
-                            This thread includes automated order-confirmation activity. Keep manual replies operational and consistent with the confirmation flow.
+                            This thread is inside an active order-confirmation window. Use Order Confirmations for confirm, edit, and cancel actions.
+                          </div>
+                        ) : null}
+                        {hasClosedOrderWindow ? (
+                          <div className="space-y-3 rounded-2xl border border-slate-400/20 bg-slate-500/5 px-3 py-3 text-xs text-muted-foreground">
+                            <div>This thread is linked to a closed order-confirmation window. Order actions are now read-only.</div>
+                            <div className="flex flex-wrap gap-2">
+                              <Button type="button" variant="outline" size="sm" disabled>
+                                Confirm
+                              </Button>
+                              <Button type="button" variant="outline" size="sm" disabled>
+                                Edit
+                              </Button>
+                              <Button type="button" variant="outline" size="sm" disabled>
+                                Cancel
+                              </Button>
+                            </div>
                           </div>
                         ) : null}
                         <Textarea
