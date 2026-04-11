@@ -7,6 +7,7 @@ import {
   AlertTriangle,
   BotMessageSquare,
   CheckCircle2,
+  ClipboardCheck,
   Clock3,
   Download,
   FileJson,
