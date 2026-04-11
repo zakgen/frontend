@@ -2,7 +2,15 @@
 
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { Boxes, Bot, MessageSquareText, MessagesSquare, Sparkles } from "lucide-react";
+import {
+  ArrowUpRight,
+  Boxes,
+  Bot,
+  ClipboardCheck,
+  MessageSquareText,
+  MessagesSquare,
+  Sparkles,
+} from "lucide-react";
 
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { ErrorState } from "@/components/dashboard/error-state";
@@ -32,6 +40,10 @@ export function OverviewPanel({ businessId }: { businessId: number }) {
     queryKey: queryKeys.overview(businessId),
     queryFn: () => api.getOverview(businessId),
   });
+  const orderConfirmationsQuery = useQuery({
+    queryKey: queryKeys.orderConfirmations(businessId, "all"),
+    queryFn: () => api.listOrderConfirmationSessions(businessId, "all"),
+  });
 
   if (overviewQuery.isLoading) {
     return (
@@ -58,6 +70,18 @@ export function OverviewPanel({ businessId }: { businessId: number }) {
 
   const { stats, recent_chats, recent_products, ai_insight, sync_notice } =
     overviewQuery.data;
+  const orderSessions = orderConfirmationsQuery.data?.sessions ?? [];
+  const orderMetrics = {
+    awaiting: orderSessions.filter((session) => session.status === "awaiting_customer").length,
+    confirmed: orderSessions.filter((session) => session.status === "confirmed").length,
+    declined: orderSessions.filter((session) => session.status === "declined").length,
+    needsHuman: orderSessions.filter((session) => session.needs_human).length,
+  };
+  const chatMetrics = {
+    total: stats.total_conversations,
+    inbound: recent_chats.reduce((sum, chat) => sum + chat.inbound_count, 0),
+    needsHuman: recent_chats.filter((chat) => chat.needs_human).length,
+  };
 
   return (
     <div className="space-y-8">
@@ -80,6 +104,59 @@ export function OverviewPanel({ businessId }: { businessId: number }) {
           </CardContent>
         </Card>
       ) : null}
+
+      <section className="grid gap-5 xl:grid-cols-2">
+        <Card className="border-slate-500/15 bg-slate-500/5">
+          <CardContent className="space-y-5 p-6">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                <Bot className="h-4 w-4" />
+                Chats / AI Assistant
+              </div>
+              <p className="text-sm leading-6 text-muted-foreground">
+                Inbound WhatsApp conversations and assistant replies are reviewed in Chats.
+              </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <MiniMetric label="Conversations" value={chatMetrics.total.toString()} />
+              <MiniMetric label="Inbound messages" value={chatMetrics.inbound.toString()} />
+              <MiniMetric label="Needs human" value={chatMetrics.needsHuman.toString()} />
+            </div>
+            <Button asChild variant="outline">
+              <Link href={`${getBusinessHref(businessId, "/chats")}?scope=ai-assistant`}>
+                Open Chats
+                <ArrowUpRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="border-amber-500/20 bg-amber-500/6">
+          <CardContent className="space-y-5 p-6">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm font-medium text-amber-700">
+                <ClipboardCheck className="h-4 w-4" />
+                Auto Order Confirmation
+              </div>
+              <p className="text-sm leading-6 text-muted-foreground">
+                New orders go through Order Confirmations before an operator needs to step in.
+              </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-4">
+              <MiniMetric label="Awaiting" value={orderMetrics.awaiting.toString()} />
+              <MiniMetric label="Confirmed" value={orderMetrics.confirmed.toString()} />
+              <MiniMetric label="Declined" value={orderMetrics.declined.toString()} />
+              <MiniMetric label="Needs human" value={orderMetrics.needsHuman.toString()} />
+            </div>
+            <Button asChild variant="outline">
+              <Link href={getBusinessHref(businessId, "/order-confirmations")}>
+                Open Order Confirmations
+                <ArrowUpRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </section>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <StatCard
@@ -210,6 +287,15 @@ export function OverviewPanel({ businessId }: { businessId: number }) {
           </CardContent>
         </Card>
       </section>
+    </div>
+  );
+}
+
+function MiniMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
+      <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">{label}</div>
+      <div className="mt-2 text-2xl font-semibold text-foreground">{value}</div>
     </div>
   );
 }

@@ -1,8 +1,16 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, RefreshCcw, Search, SendHorizonal, UserRound } from "lucide-react";
+import {
+  ClipboardCheck,
+  Loader2,
+  RefreshCcw,
+  Search,
+  SendHorizonal,
+  UserRound,
+} from "lucide-react";
 
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { ErrorState } from "@/components/dashboard/error-state";
@@ -20,10 +28,30 @@ import { toast } from "@/components/ui/sonner";
 import { Textarea } from "@/components/ui/textarea";
 import { getDashboardApi } from "@/lib/api";
 import { queryKeys } from "@/lib/api/query-keys";
+import { getBusinessHref } from "@/lib/routes";
 import { getDateGroupLabel, getIntentMeta, formatDateTime, formatRelativeTime, maskPhoneNumber } from "@/lib/utils";
 import type { ConversationIntent, ConversationMessage, ConversationSummary } from "@/lib/types";
 
 const api = getDashboardApi();
+const orderConfirmationKeywords = [
+  "confirmer votre commande",
+  "confirmation de commande",
+  "modifier la commande",
+  "annuler la commande",
+  "confirmer la commande",
+  "confirmer commande",
+  "confirmation",
+  "commande",
+  "order confirmation",
+  "confirm order",
+  "تأكيد الطلب",
+  "تعديل الطلب",
+  "الغاء الطلب",
+  "إلغاء الطلب",
+];
+
+type ChatScope = "all" | "order_confirmations" | "ai_assistant";
+type ChatFlowType = "order_confirmation" | "ai_assistant" | "mixed";
 
 function groupByDate(conversations: ConversationSummary[]) {
   return conversations.reduce<Record<string, ConversationSummary[]>>((acc, conversation) => {
@@ -42,11 +70,96 @@ function isOutsideWindowSkippedMessage(message: ConversationMessage) {
   );
 }
 
-export function ChatInbox({ businessId }: { businessId: number }) {
+function normalizeScope(value?: string | null): ChatScope {
+  if (value === "order-confirmations" || value === "order_confirmations") {
+    return "order_confirmations";
+  }
+  if (value === "ai-assistant" || value === "ai_assistant") {
+    return "ai_assistant";
+  }
+  return "all";
+}
+
+function containsOrderConfirmationPattern(value?: string | null) {
+  const normalized = value?.toLowerCase() ?? "";
+  return orderConfirmationKeywords.some((keyword) => normalized.includes(keyword));
+}
+
+function classifyChatSummary(chat: ConversationSummary): ChatFlowType {
+  const looksLikeConfirmation = containsOrderConfirmationPattern(chat.last_message);
+  const looksLikeAssistant = chat.intents.length > 0 || chat.needs_human;
+
+  if (looksLikeConfirmation && looksLikeAssistant) return "mixed";
+  if (looksLikeConfirmation) return "order_confirmation";
+  return "ai_assistant";
+}
+
+function classifyThreadFlow(
+  messages: ConversationMessage[],
+  forcedOrderConfirmation: boolean,
+): ChatFlowType {
+  const looksLikeConfirmation =
+    forcedOrderConfirmation ||
+    messages.some((message) => containsOrderConfirmationPattern(message.text));
+  const looksLikeAssistant = messages.some(
+    (message) => Boolean(message.intent) || Boolean(message.needs_human),
+  );
+
+  if (looksLikeConfirmation && looksLikeAssistant) return "mixed";
+  if (looksLikeConfirmation) return "order_confirmation";
+  return "ai_assistant";
+}
+
+function matchesScope(flow: ChatFlowType, scope: ChatScope) {
+  if (scope === "all") return true;
+  if (scope === "order_confirmations") {
+    return flow === "order_confirmation" || flow === "mixed";
+  }
+  return flow === "ai_assistant" || flow === "mixed";
+}
+
+function getFlowMeta(flow: ChatFlowType) {
+  switch (flow) {
+    case "order_confirmation":
+      return {
+        label: "Order confirmation",
+        variant: "warning" as const,
+        helper:
+          "This conversation is part of an order confirmation flow.",
+      };
+    case "mixed":
+      return {
+        label: "Mixed",
+        variant: "secondary" as const,
+        helper:
+          "This conversation mixes order confirmation activity with inbound assistant questions.",
+      };
+    case "ai_assistant":
+    default:
+      return {
+        label: "AI assistant",
+        variant: "outline" as const,
+        helper:
+          "This conversation is handled as an inbound assistant chat.",
+      };
+  }
+}
+
+export function ChatInbox({
+  businessId,
+  initialPhone,
+  initialScope,
+}: {
+  businessId: number;
+  initialPhone?: string;
+  initialScope?: string;
+}) {
   const { t } = useLocale();
+  const initialPhoneAppliedRef = useRef(false);
   const [phoneSearch, setPhoneSearch] = useState("");
   const [intent, setIntent] = useState("all");
   const [direction, setDirection] = useState("all");
+  const [scope, setScope] = useState<ChatScope>(() => normalizeScope(initialScope));
   const [needsHumanOnly, setNeedsHumanOnly] = useState(false);
   const [selectedPhone, setSelectedPhone] = useState<string | null>(null);
   const [draftReply, setDraftReply] = useState("");
@@ -69,28 +182,66 @@ export function ChatInbox({ businessId }: { businessId: number }) {
       }),
   });
 
+  const scopedChats = useMemo(
+    () =>
+      (chatsQuery.data ?? []).filter((chat) =>
+        (initialPhone && chat.phone === initialPhone) ||
+        matchesScope(classifyChatSummary(chat), scope),
+      ),
+    [chatsQuery.data, scope, initialPhone],
+  );
+
   useEffect(() => {
-    if (!chatsQuery.data?.length) {
+    if (!scopedChats.length) {
       setSelectedPhone(null);
       return;
     }
 
-    if (!selectedPhone || !chatsQuery.data.some((item) => item.phone === selectedPhone)) {
-      setSelectedPhone(chatsQuery.data[0].phone);
+    if (
+      !initialPhoneAppliedRef.current &&
+      initialPhone &&
+      scopedChats.some((item) => item.phone === initialPhone)
+    ) {
+      initialPhoneAppliedRef.current = true;
+      setSelectedPhone(initialPhone);
+      return;
     }
-  }, [chatsQuery.data, selectedPhone]);
+
+    if (!selectedPhone || !scopedChats.some((item) => item.phone === selectedPhone)) {
+      setSelectedPhone(scopedChats[0].phone);
+    }
+  }, [scopedChats, selectedPhone, initialPhone]);
 
   const intents = useMemo(
     () => Array.from(new Set((chatsQuery.data ?? []).flatMap((chat) => chat.intents))).sort(),
     [chatsQuery.data],
   );
-  const groups = useMemo(() => groupByDate(chatsQuery.data ?? []), [chatsQuery.data]);
+  const groups = useMemo(() => groupByDate(scopedChats), [scopedChats]);
 
   const threadQuery = useQuery({
     queryKey: queryKeys.thread(businessId, selectedPhone),
     queryFn: () => api.getChatThread(businessId, selectedPhone as string),
     enabled: Boolean(selectedPhone),
   });
+
+  const selectedSummary = useMemo(
+    () => scopedChats.find((chat) => chat.phone === selectedPhone) ?? null,
+    [scopedChats, selectedPhone],
+  );
+  const summaryFlow = selectedSummary ? classifyChatSummary(selectedSummary) : "ai_assistant";
+  const threadFlow = useMemo(() => {
+    if (!threadQuery.data?.messages.length) {
+      return initialScope === "order-confirmations" || initialScope === "order_confirmations"
+        ? "order_confirmation"
+        : summaryFlow;
+    }
+    return classifyThreadFlow(
+      threadQuery.data.messages,
+      (initialScope === "order-confirmations" || initialScope === "order_confirmations") &&
+        selectedPhone === initialPhone,
+    );
+  }, [threadQuery.data?.messages, initialScope, selectedPhone, initialPhone, summaryFlow]);
+  const threadFlowMeta = getFlowMeta(threadFlow);
 
   useEffect(() => {
     if (!threadQuery.data?.messages.length) return;
@@ -170,6 +321,16 @@ export function ChatInbox({ businessId }: { businessId: number }) {
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
+                  <Select value={scope} onValueChange={(value) => setScope(value as ChatScope)}>
+                    <SelectTrigger className="col-span-2">
+                      <SelectValue placeholder="Scope" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All chats</SelectItem>
+                      <SelectItem value="order_confirmations">Order confirmations</SelectItem>
+                      <SelectItem value="ai_assistant">AI assistant</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <Select value={intent} onValueChange={setIntent}>
                     <SelectTrigger>
                       <SelectValue placeholder={t("chats.intent")} />
@@ -216,14 +377,16 @@ export function ChatInbox({ businessId }: { businessId: number }) {
                         <Skeleton key={index} className="h-24" />
                       ))}
                     </div>
-                  ) : chatsQuery.data?.length ? (
+                  ) : scopedChats.length ? (
                     Object.entries(groups).map(([label, items]) => (
                       <div key={label} className="mb-4">
                         <div className="mb-2 px-2 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
                           {label}
                         </div>
                         <div className="space-y-2">
-                          {items.map((chat) => (
+                          {items.map((chat) => {
+                            const flowMeta = getFlowMeta(classifyChatSummary(chat));
+                            return (
                             <button
                               key={chat.phone}
                               className={`w-full rounded-2xl border p-4 text-left transition ${
@@ -251,6 +414,7 @@ export function ChatInbox({ businessId }: { businessId: number }) {
                               </div>
                               <p className="line-clamp-2 text-sm text-muted-foreground">{chat.last_message}</p>
                               <div className="mt-3 flex flex-wrap gap-2">
+                                <Badge variant={flowMeta.variant}>{flowMeta.label}</Badge>
                                 {chat.intents.slice(0, 2).map((item) => (
                                   <Badge key={item} variant={getIntentMeta(item).variant}>
                                     {getIntentMeta(item).label}
@@ -258,7 +422,8 @@ export function ChatInbox({ businessId }: { businessId: number }) {
                                 ))}
                               </div>
                             </button>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                     ))
@@ -331,6 +496,28 @@ export function ChatInbox({ businessId }: { businessId: number }) {
                           </Button>
                         </div>
                       </div>
+                      <div className="mt-4 flex flex-wrap items-start justify-between gap-3 rounded-2xl border border-border/70 bg-card/70 p-4">
+                        <div className="space-y-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge variant={threadFlowMeta.variant}>{threadFlowMeta.label}</Badge>
+                            {selectedSummary?.needs_human ? (
+                              <Badge variant="warning">Relais humain</Badge>
+                            ) : null}
+                          </div>
+                          <p className="text-sm text-muted-foreground">{threadFlowMeta.helper}</p>
+                          <div className="text-xs text-muted-foreground">
+                            New orders go through Order Confirmations. Inbound questions and follow-ups are handled in Chats.
+                          </div>
+                        </div>
+                        {threadFlow !== "ai_assistant" ? (
+                          <Button asChild variant="outline" size="sm">
+                            <Link href={getBusinessHref(businessId, "/order-confirmations")}>
+                              <ClipboardCheck className="h-4 w-4" />
+                              Open Order Confirmations
+                            </Link>
+                          </Button>
+                        ) : null}
+                      </div>
                     </div>
                     <ScrollArea className="h-[520px] xl:h-[560px]">
                       <div className="space-y-4 p-6">
@@ -343,6 +530,8 @@ export function ChatInbox({ businessId }: { businessId: number }) {
                         {threadQuery.data.messages.map((message) => {
                           const inbound = message.direction === "inbound";
                           const skippedOutsideWindow = isOutsideWindowSkippedMessage(message);
+                          const isAutomationMessage =
+                            !inbound && containsOrderConfirmationPattern(message.text);
                           return (
                             <div
                               key={message.id}
@@ -359,6 +548,11 @@ export function ChatInbox({ businessId }: { businessId: number }) {
                                   <Badge variant={inbound ? "outline" : "secondary"}>
                                     {inbound ? "Entrant" : "Sortant"}
                                   </Badge>
+                                  {!inbound ? (
+                                    <Badge variant={isAutomationMessage ? "warning" : "secondary"}>
+                                      {isAutomationMessage ? "Auto order confirmation" : "Operator reply"}
+                                    </Badge>
+                                  ) : null}
                                   {message.intent ? (
                                     <Badge variant={getIntentMeta(message.intent).variant}>
                                       {getIntentMeta(message.intent).label}
@@ -401,6 +595,11 @@ export function ChatInbox({ businessId }: { businessId: number }) {
                     </ScrollArea>
                     <div className="border-t border-border/70 bg-background/90 p-4">
                       <div className="space-y-3 rounded-3xl border border-border/70 bg-card/70 p-4 shadow-sm">
+                        {threadFlow !== "ai_assistant" ? (
+                          <div className="rounded-2xl border border-amber-500/20 bg-amber-500/8 px-3 py-2 text-xs text-amber-700">
+                            This thread includes automated order-confirmation activity. Keep manual replies operational and consistent with the confirmation flow.
+                          </div>
+                        ) : null}
                         <Textarea
                           value={draftReply}
                           onChange={(event) => setDraftReply(event.target.value)}

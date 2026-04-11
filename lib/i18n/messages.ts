@@ -100,7 +100,7 @@ export const messages = {
     "dashboard.overview.eyebrow": "Tableau de bord",
     "dashboard.overview.title": "Le point rapide sur vos opérations",
     "dashboard.overview.description":
-      "En quelques secondes, voyez si Rasil suit bien les conversations, si votre catalogue est à jour et s'il reste une étape de configuration à terminer.",
+      "Voyez clairement vos deux flux clés: les conversations inbound gérées dans Chats, et les confirmations automatiques pilotées dans Confirmations de commande.",
     "dashboard.overview.unavailableTitle": "Tableau de bord indisponible",
     "dashboard.overview.unavailableDescription":
       "Les indicateurs du jour n'ont pas pu être chargés.",
@@ -164,7 +164,7 @@ export const messages = {
     "chats.eyebrow": "Chats",
     "chats.title": "Passez en revue les échanges avec vos clientes",
     "chats.description":
-      "Consultez vos conversations comme une boîte de réception, repérez l'intention principale et les cas qui demandent un relais humain.",
+      "Consultez vos conversations inbound comme une boîte de réception, repérez ce qui relève de l'assistant et ce qui reste lié à un flux de confirmation de commande.",
     "chats.unavailableTitle": "Conversations indisponibles",
     "chats.unavailableDescription": "Les conversations WhatsApp n'ont pas pu être chargées.",
     "chats.searchPhone": "Rechercher un numéro",
@@ -297,7 +297,7 @@ export const messages = {
     "dashboard.overview.eyebrow": "Overview",
     "dashboard.overview.title": "Your quick operations snapshot",
     "dashboard.overview.description":
-      "In a few seconds, see whether Rasil is handling conversations well, whether your catalog is up to date, and whether any setup step is still pending.",
+      "See your two key flows clearly: inbound conversations managed in Chats, and automated sessions managed in Order confirmations.",
     "dashboard.overview.unavailableTitle": "Overview unavailable",
     "dashboard.overview.unavailableDescription":
       "Today's metrics could not be loaded.",
@@ -361,7 +361,7 @@ export const messages = {
     "chats.eyebrow": "Chats",
     "chats.title": "Review conversations with your customers",
     "chats.description":
-      "Browse your conversations like an inbox, spot the main intent, and identify cases that need human support.",
+      "Review inbound conversations like an inbox, and quickly separate assistant-led chats from order-confirmation follow-ups.",
     "chats.unavailableTitle": "Conversations unavailable",
     "chats.unavailableDescription": "WhatsApp conversations could not be loaded.",
     "chats.searchPhone": "Search a number",

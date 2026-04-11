@@ -121,6 +121,11 @@ export function DashboardShell({
             </div>
 
             <nav className="flex-1 space-y-1 pb-8">
+              <div className="mb-4 rounded-2xl border border-border/60 bg-background/75 px-4 py-3 text-xs leading-5 text-muted-foreground">
+                <span className="font-medium text-foreground">Chats</span> cover inbound WhatsApp conversations and assistant replies.
+                <br />
+                <span className="font-medium text-foreground">Order Confirmations</span> manage automated post-order confirmation flows.
+              </div>
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const active = item.href === getBusinessHref(businessId)

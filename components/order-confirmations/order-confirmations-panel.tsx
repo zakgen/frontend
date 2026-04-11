@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -48,6 +49,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/sonner";
 import { getDashboardApi } from "@/lib/api";
 import { queryKeys } from "@/lib/api/query-keys";
+import { getBusinessHref } from "@/lib/routes";
 import {
   cn,
   formatCurrency,
@@ -321,8 +323,8 @@ export function OrderConfirmationsPanel({ businessId }: { businessId: number }) 
     <div className="space-y-8">
       <PageHeader
         eyebrow="Confirmations de commande"
-        title="Suivi des confirmations"
-        description="Suivez les sessions, ouvrez une commande, exportez les donnees et appliquez une action si besoin."
+        title="Auto Order Confirmation"
+        description="Cette page pilote le flux automatise de confirmation apres commande. Ouvrez une session, verifiez la livraison du message et intervenez seulement quand le flux en a besoin."
         trailing={
           <div className="flex flex-wrap gap-2">
             <Button
@@ -497,7 +499,7 @@ export function OrderConfirmationsPanel({ businessId }: { businessId: number }) 
               ) : null}
             </div>
             <div className="text-sm text-muted-foreground">
-              Ouvrez l&apos;historique complet, les articles et les actions disponibles pour la session choisie.
+              Cette vue gere les sessions automatisees, pas les echanges inbound generaux. Utilisez Chats pour les questions, relances et conversations hors confirmation.
             </div>
           </CardHeader>
           <CardContent className="pt-0">
@@ -520,6 +522,7 @@ export function OrderConfirmationsPanel({ businessId }: { businessId: number }) 
               />
             ) : (
               <SessionDetail
+                businessId={businessId}
                 detail={detailQuery.data}
                 onOpenAction={(action) => {
                   setPendingAction(action);
@@ -580,9 +583,11 @@ function MiniInfo({ label, value }: { label: string; value: string }) {
 }
 
 function SessionDetail({
+  businessId,
   detail,
   onOpenAction,
 }: {
+  businessId: number;
   detail: OrderConfirmationSessionDetail;
   onOpenAction: (action: OrderConfirmationAction) => void;
 }) {
@@ -594,6 +599,17 @@ function SessionDetail({
       <div className="space-y-6">
         <section className="space-y-4">
           <SectionTitle title="Resume de session" />
+          <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-amber-500/20 bg-amber-500/8 px-4 py-3 text-sm text-amber-700">
+            <ClipboardCheck className="h-4 w-4" />
+            <span>New orders go through Order Confirmations before they become regular inbound conversations.</span>
+            <Button asChild size="sm" variant="outline" className="ml-auto">
+              <Link
+                href={`${getBusinessHref(businessId, "/chats")}?scope=order-confirmations&phone=${encodeURIComponent(order.customer_phone)}`}
+              >
+                Open related chat
+              </Link>
+            </Button>
+          </div>
           <div className="grid gap-3 md:grid-cols-2">
             <MiniInfo label="Session id" value={detail.id} />
             <div className="rounded-2xl border border-border/70 bg-card/70 p-3">
@@ -726,6 +742,9 @@ function SessionDetail({
 
         <section className="space-y-4">
           <SectionTitle title="Actions manuelles" />
+          <div className="rounded-2xl border border-border/70 bg-background/70 p-4 text-sm text-muted-foreground">
+            Use these actions only to steer the automated confirmation flow. General customer follow-ups should be handled from Chats.
+          </div>
           <div className="grid gap-3 md:grid-cols-2">
             {(
               [
