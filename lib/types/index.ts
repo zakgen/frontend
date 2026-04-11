@@ -2,6 +2,7 @@ export type MessageDirection = "inbound" | "outbound";
 export type StockStatus = "in_stock" | "low_stock" | "out_of_stock";
 export type KnowledgeState = "up_to_date" | "recommended" | "running" | "error";
 export type ToneOfVoice = "formal" | "friendly" | "professional";
+export type BusinessDefaultLanguage = "arabic" | "french";
 export type ConversationIntent =
   | "livraison"
   | "prix"
@@ -46,7 +47,7 @@ export type BusinessProfile = {
   summary: string;
   niche: string;
   city: string;
-  supported_languages: string[];
+  default_language: BusinessDefaultLanguage;
   tone_of_voice: ToneOfVoice;
   opening_hours: string[];
   delivery_zones: string[];

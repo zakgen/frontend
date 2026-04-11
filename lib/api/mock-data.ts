@@ -17,7 +17,7 @@ export const mockBusiness: BusinessProfile = {
     "Boutique marocaine de mode feminine et accessoires premium, avec un service WhatsApp rapide, chaleureux et fiable.",
   niche: "Mode feminine",
   city: "Casablanca",
-  supported_languages: ["Darija", "Francais", "Arabe"],
+  default_language: "french",
   tone_of_voice: "friendly",
   opening_hours: [
     "Lun - Ven : 09:00 - 20:00",

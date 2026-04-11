@@ -18,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/sonner";
 import { getDashboardApi } from "@/lib/api";
@@ -33,7 +34,7 @@ const defaultValues: BusinessProfileFormValues = {
   summary: "",
   niche: "",
   city: "",
-  supported_languages: [],
+  default_language: "french",
   tone_of_voice: "friendly",
   opening_hours: [],
   delivery_zones: [],
@@ -109,7 +110,7 @@ export function BusinessProfileForm({ businessId }: { businessId: number }) {
         summary: businessQuery.data.summary,
         niche: businessQuery.data.niche,
         city: businessQuery.data.city,
-        supported_languages: businessQuery.data.supported_languages,
+        default_language: businessQuery.data.default_language,
         tone_of_voice: businessQuery.data.tone_of_voice,
         opening_hours: businessQuery.data.opening_hours,
         delivery_zones: businessQuery.data.delivery_zones,
@@ -159,7 +160,7 @@ export function BusinessProfileForm({ businessId }: { businessId: number }) {
     values.summary,
     values.niche,
     values.city,
-    values.supported_languages.length,
+    values.default_language,
     values.tone_of_voice,
     values.opening_hours.length,
   ].filter(Boolean).length;
@@ -250,18 +251,22 @@ export function BusinessProfileForm({ businessId }: { businessId: number }) {
             </FormField>
             <Controller
               control={form.control}
-              name="supported_languages"
+              name="default_language"
               render={({ field, fieldState }) => (
                 <FormField
-                  label="Langues prises en charge"
-                  description="Ajoutez les langues que votre assistant peut utiliser."
+                  label="Langue par defaut"
+                  description="Choisissez la langue par defaut utilisee par votre assistant."
                   error={fieldState.error?.message}
                 >
-                  <StringListInput
-                    value={field.value}
-                    onChange={field.onChange}
-                    placeholder="Darija, Francais, Arabe..."
-                  />
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choisir une langue" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="arabic">arabic</SelectItem>
+                      <SelectItem value="french">french</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </FormField>
               )}
             />
@@ -454,7 +459,7 @@ function valuesFromProfile(data: Awaited<ReturnType<typeof api.getBusiness>>): B
     summary: data.summary,
     niche: data.niche,
     city: data.city,
-    supported_languages: data.supported_languages,
+    default_language: data.default_language,
     tone_of_voice: data.tone_of_voice,
     opening_hours: data.opening_hours,
     delivery_zones: data.delivery_zones,

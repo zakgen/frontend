@@ -7,25 +7,27 @@ export const faqItemSchema = z.object({
 });
 
 export const businessProfileSchema = z.object({
-  name: z.string().min(2, "Le nom de la boutique est obligatoire"),
-  summary: z.string().min(10, "Ajoutez un resume utile pour l'assistant"),
-  niche: z.string().min(2, "Le secteur est obligatoire"),
-  city: z.string().min(2, "La ville est obligatoire"),
-  supported_languages: z.array(z.string().min(1)).min(1, "Ajoutez au moins une langue"),
+  name: z.string(),
+  summary: z.string(),
+  niche: z.string(),
+  city: z.string(),
+  default_language: z.enum(["arabic", "french"], {
+    errorMap: () => ({ message: "Choisissez une langue par defaut" }),
+  }),
   tone_of_voice: z.enum(["formal", "friendly", "professional"], {
     errorMap: () => ({ message: "Choisissez un ton de voix" }),
   }),
-  opening_hours: z.array(z.string().min(1)).min(1, "Ajoutez les horaires d'ouverture"),
-  delivery_zones: z.array(z.string().min(1)).min(1, "Ajoutez au moins une zone de livraison"),
-  delivery_time: z.string().min(2, "Le delai de livraison est obligatoire"),
-  shipping_policy: z.string().min(8, "La politique de livraison est obligatoire"),
-  return_policy: z.string().min(8, "La politique de retour est obligatoire"),
-  payment_methods: z
-    .array(z.enum(["cash_on_delivery", "card_payment", "bank_transfer"]))
-    .min(1, "Ajoutez au moins un mode de paiement"),
+  opening_hours: z.array(z.string().min(1)),
+  delivery_zones: z.array(z.string().min(1)),
+  delivery_time: z.string(),
+  shipping_policy: z.string(),
+  return_policy: z.string(),
+  payment_methods: z.array(
+    z.enum(["cash_on_delivery", "card_payment", "bank_transfer"]),
+  ),
   faq: z.array(faqItemSchema),
   order_rules: z.array(z.string().min(1)),
-  escalation_contact: z.string().min(3, "Le contact de relais humain est obligatoire"),
+  escalation_contact: z.string(),
   upsell_rules: z.array(z.string().min(1)),
 });
 
