@@ -22,6 +22,8 @@ import type {
   ShopifyProductImportResult,
   ProductListResult,
   SyncStatus,
+  ConversationSummary,
+  ConversationThread,
 } from "@/lib/types";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
@@ -129,6 +131,7 @@ export class RestDashboardApi implements DashboardApi {
       method: "POST",
       body: {
         name: input.name,
+        website_url: input.website_url ?? null,
         description: input.description ?? null,
         city: input.city ?? null,
         shipping_policy: input.shipping_policy ?? null,
@@ -157,7 +160,7 @@ export class RestDashboardApi implements DashboardApi {
   async getChats(
     businessId: number,
     filters?: ChatFilters,
-  ): Promise<import("@/lib/types").ConversationSummary[]> {
+  ): Promise<ConversationSummary[]> {
     return request(`/business/${businessId}/chats`, {
       query: {
         phone: filters?.phone,
@@ -172,7 +175,7 @@ export class RestDashboardApi implements DashboardApi {
   async getChatThread(
     businessId: number,
     phone: string,
-  ): Promise<import("@/lib/types").ConversationThread> {
+  ): Promise<ConversationThread> {
     return request(`/business/${businessId}/chats/${encodeURIComponent(phone)}`);
   }
 
@@ -222,6 +225,7 @@ export class RestDashboardApi implements DashboardApi {
       body: {
         business_id: businessId,
         external_id: input.external_id,
+        product_url: input.product_url ?? null,
         name: input.name,
         description: input.description,
         category: input.category,
@@ -238,6 +242,7 @@ export class RestDashboardApi implements DashboardApi {
       method: "PUT",
       body: {
         external_id: input.external_id,
+        product_url: input.product_url ?? null,
         name: input.name,
         description: input.description,
         category: input.category,
@@ -263,6 +268,7 @@ export class RestDashboardApi implements DashboardApi {
         business_id: businessId,
         products: items.map((item) => ({
           external_id: "name" in item && item.name ? item.name.toLowerCase().replace(/\s+/g, "-") : undefined,
+          product_url: item.product_url ?? null,
           name: item.name,
           description: item.description ?? "",
           category: item.category ?? "",

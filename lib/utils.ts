@@ -73,18 +73,26 @@ export function getDateGroupLabel(value: string) {
 export function getIntentMeta(intent: ConversationIntent) {
   const mapping: Record<
     ConversationIntent,
-    { label: string; variant: "default" | "secondary" | "outline" | "success" | "warning" | "destructive" }
+    {
+      label: string;
+      variant: "default" | "secondary" | "outline" | "success" | "warning" | "destructive";
+    }
   > = {
-    livraison: { label: "Livraison", variant: "outline" },
-    prix: { label: "Prix", variant: "secondary" },
-    disponibilite: { label: "Disponibilite", variant: "success" },
-    retour: { label: "Retour", variant: "warning" },
-    paiement: { label: "Paiement", variant: "default" },
-    infos_produit: { label: "Infos produit", variant: "secondary" },
-    autre: { label: "Autre", variant: "outline" },
+    order_status: { label: "Statut commande", variant: "outline" },
+    change_request: { label: "Modification", variant: "warning" },
+    shipping_question: { label: "Livraison", variant: "outline" },
+    payment_question: { label: "Paiement", variant: "default" },
+    cancel_request: { label: "Annulation", variant: "destructive" },
+    confirmation_question: { label: "Confirmation", variant: "success" },
+    product_question_in_order: { label: "Produit (commande)", variant: "secondary" },
+    product_info: { label: "Infos produit", variant: "secondary" },
+    policy_info: { label: "Politiques", variant: "outline" },
+    business_info: { label: "Boutique", variant: "outline" },
+    delivery_info: { label: "Infos livraison", variant: "outline" },
+    general_support: { label: "Support", variant: "outline" },
   };
 
-  return mapping[intent];
+  return mapping[intent] || { label: intent, variant: "outline" };
 }
 
 export function getStockStatusLabel(status: StockStatus) {

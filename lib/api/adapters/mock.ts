@@ -91,11 +91,12 @@ function toBusinessSummary(business: BusinessProfile): BusinessSummary {
   return {
     id: business.id,
     name: business.name,
+    website_url: business.website_url,
     description: business.summary,
     city: business.city,
     shipping_policy: business.shipping_policy,
     delivery_zones: business.delivery_zones,
-    payment_methods: business.payment_methods,
+    payment_methods: business.payment_methods as string[],
     profile_metadata: {
       niche: business.niche,
       tone_of_voice: business.tone_of_voice,

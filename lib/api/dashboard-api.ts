@@ -22,6 +22,7 @@ import type {
   ProductListResult,
   SyncStatus,
   CommercePlatformId,
+  ConversationMessage,
 } from "@/lib/types";
 
 export interface DashboardApi {
@@ -43,7 +44,7 @@ export interface DashboardApi {
     businessId: number,
     phone: string,
     input: ChatReplyInput,
-  ): Promise<import("@/lib/types").ConversationMessage>;
+  ): Promise<ConversationMessage>;
   getProducts(
     businessId: number,
     search?: string,

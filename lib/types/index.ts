@@ -4,13 +4,18 @@ export type KnowledgeState = "up_to_date" | "recommended" | "running" | "error";
 export type ToneOfVoice = "formal" | "friendly" | "professional";
 export type BusinessDefaultLanguage = "arabic" | "french";
 export type ConversationIntent =
-  | "livraison"
-  | "prix"
-  | "disponibilite"
-  | "retour"
-  | "paiement"
-  | "infos_produit"
-  | "autre";
+  | "order_status"
+  | "change_request"
+  | "shipping_question"
+  | "payment_question"
+  | "cancel_request"
+  | "confirmation_question"
+  | "product_question_in_order"
+  | "product_info"
+  | "policy_info"
+  | "business_info"
+  | "delivery_info"
+  | "general_support";
 export type MessageContext = "order_confirmation" | "general";
 export type OrderWindowStatus = "ongoing" | "closed";
 export type PaymentMethod =
@@ -46,16 +51,24 @@ export type FAQItem = {
 export type BusinessProfile = {
   id: number;
   name: string;
+  website_url?: string | null;
   summary: string;
   niche: string;
   city: string;
   default_language: BusinessDefaultLanguage;
+  supported_languages: string[];
   tone_of_voice: ToneOfVoice;
   opening_hours: string[];
+  contact_email?: string | null;
+  contact_phone?: string | null;
+  store_address?: string | null;
   delivery_zones: string[];
   delivery_time: string;
   shipping_policy: string;
   return_policy: string;
+  cod_confirmation_policy: string;
+  address_edit_policy: string;
+  cancellation_policy: string;
   payment_methods: PaymentMethod[];
   faq: FAQItem[];
   order_rules: string[];
@@ -67,6 +80,7 @@ export type BusinessProfile = {
 export type BusinessSummary = {
   id: number;
   name: string;
+  website_url?: string | null;
   description?: string | null;
   city?: string | null;
   shipping_policy?: string | null;
@@ -83,6 +97,7 @@ export type MyBusinessesResponse = {
 
 export type CreateBusinessInput = {
   name: string;
+  website_url?: string;
   description?: string;
   city?: string;
   shipping_policy?: string;
@@ -99,6 +114,7 @@ export type Product = {
   id: string;
   business_id: number;
   external_id?: string;
+  product_url?: string | null;
   name: string;
   description: string;
   category: string;
@@ -116,6 +132,7 @@ export type ProductInput = Omit<Product, "id" | "created_at" | "updated_at"> & {
 
 export type BulkProductInput = {
   name: string;
+  product_url?: string;
   description?: string;
   category?: string;
   price?: number | null;
@@ -228,10 +245,12 @@ export type SyncStatus = {
 };
 
 export type WhatsAppIntegration = {
+  provider: string;
   phone_number: string;
   business_name: string;
   status: IntegrationConnectionState;
   health: IntegrationHealth;
+  onboarding_status: string;
   received_messages_last_30_days: number;
   last_activity_at: string | null;
 };
